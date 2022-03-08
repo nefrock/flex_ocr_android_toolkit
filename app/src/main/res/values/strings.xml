@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">FlexInvoice</string>
+    <string name="request_permission">カメラの起動を許可してください</string>
+    <string name="permdesc_flashlight">フラッシュライトを使用します</string>
+    <string name="permlab_flashlight">フラッシュライトを使用します</string>
+
+    <string name="main_title">送り状スキャナー(仮)</string>
+    <string name="main_sub_title">#POC #プロトタイプ🦄 </string>
+    <string name="main_button_settings">設定</string>
+    <string name="main_button_start">スキャン</string>
+    <string name="main_take_pictures">送り状撮影</string>
+    <string name="upload_button_settings">評価結果をS3へアップロードする</string>
+
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="device_header">デバイス設定</string>
+    <string name="device_name">登録名</string>
+
+    <string name="model_type">モデル</string>
+    <string name="nms_thre">Threshold of NMS</string>
+    <string name="class_thre">Threshold of Class</string>
+
+
+</resources>
