@@ -29,7 +29,10 @@ FlexScanOption flexScanOption = new FlexScanOption(whiteList);
 final FlexScanResults results = FlexAPI.shared().scan(image, flexScanOption);
 ```
 
-詳細はサンプルアプリの`FlexApplication`、`ReaderActivity`クラスを参照してください。
+これらはサンプルアプリの次のクラスに実装してあります。
+
+- モデルの初期化　[FlexApplicationクラス](./app/src/main/java/com/nefrock/flex/app/FlexApplication.java)
+- スキャン処理 [ReaderActivityクラス](./app/src/main/java/com/nefrock/flex/app/ReaderActivity.java)を参照してください。
 
 ## サンプルアプリのビルド方法
 
