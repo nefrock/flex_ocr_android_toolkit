@@ -6,7 +6,9 @@
 - app ライブラリを使用するサンプルアプリ
 
 サンプルアプリのように、moduleとして直接インポートするか、
-flex_ocr_android_toolkitをarrとしてアーカイブしてからインポートして使ってください。
+flex_ocr_android_toolkitをaarとしてアーカイブしてからインポートして使ってください。
+
+TODO: mavenリポジトリ化
 
 ## 使い方
 
