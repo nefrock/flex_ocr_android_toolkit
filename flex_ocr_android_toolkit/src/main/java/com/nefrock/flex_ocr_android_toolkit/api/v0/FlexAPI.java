@@ -1,7 +1,10 @@
 package com.nefrock.flex_ocr_android_toolkit.api.v0;
 
+import android.graphics.Bitmap;
+
 import androidx.camera.core.ImageProxy;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import com.nefrock.flex_ocr_android_toolkit.api.FlexExitCode;
@@ -15,7 +18,7 @@ import com.nefrock.flex_ocr_android_toolkit.processor.result.Detection;
 import com.nefrock.flex_ocr_android_toolkit.processor.result.ScanResult;
 import com.nefrock.flex_ocr_android_toolkit.processor.result.TextResult;
 import com.nefrock.flex_ocr_android_toolkit.processor.scanner.HybridScanner;
-import com.nefrock.flex_ocr_android_toolkit.util.CVUtil;
+import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +52,24 @@ public class FlexAPI {
     }
 
     public FlexScanResults scan(ImageProxy imageProxy, FlexScanOption option) {
-        Mat rgb = CVUtil.rgba(imageProxy);
+        Mat rgb = ImageUtils.rgba(imageProxy);
+        if (scanner == null) {
+            return new FlexScanResults(new ArrayList<>(), FlexExitCode.NOT_INITIALIZED, 0);
+        }
+        ScanResult rawResult = scanner.process(rgb);
+        if(rawResult == null) {
+            return new FlexScanResults(new ArrayList<>(), FlexExitCode.MODEL_ERROR, 0);
+        }
+        return buildFlexScanResults(rawResult, option);
+    }
+
+    public FlexScanResults scan(Bitmap bitmap, FlexScanOption option) {
+        Mat rgb = new Mat();
+        //bitMapToMat should return rgb
+        Utils.bitmapToMat(bitmap, rgb);
+
+        double[] ones = rgb.get(0,0);
+
         if (scanner == null) {
             return new FlexScanResults(new ArrayList<>(), FlexExitCode.NOT_INITIALIZED, 0);
         }
