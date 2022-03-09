@@ -37,7 +37,7 @@ FlexAPI.shared().init(flexConfig);
 image = ...        
         
 HashSet<String> whiteList = new HashSet<>();
-whiteList.add("09063108081"); //ハイフン抜きで入れてください
+whiteList.add("0000000000"); //ハイフン抜きで入れてください
 FlexScanOption flexScanOption = new FlexScanOption(whiteList);
 final FlexScanResults results = FlexAPI.shared().scan(image, flexScanOption);
 ```
