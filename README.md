@@ -31,8 +31,8 @@ final FlexScanResults results = FlexAPI.shared().scan(image, flexScanOption);
 
 これらはサンプルアプリの次のクラスに実装してあります。
 
-- モデルの初期化　[FlexApplicationクラス](./app/src/main/java/com/nefrock/flex/app/FlexApplication.java)
-- スキャン処理 [ReaderActivityクラス](./app/src/main/java/com/nefrock/flex/app/ReaderActivity.java)を参照してください。
+- モデルの初期化 :arrow_right: [FlexApplicationクラス](./app/src/main/java/com/nefrock/flex/app/FlexApplication.java)
+- スキャン処理 :arrow_right: [ReaderActivityクラス](./app/src/main/java/com/nefrock/flex/app/ReaderActivity.java)
 
 ## サンプルアプリのビルド方法
 
