@@ -5,45 +5,29 @@
 - flex_ocr_android_toolkit ライブラリ
 - app ライブラリを使用するサンプルアプリ
 
-## 使い方
-
 サンプルアプリのように、moduleとして直接インポートするか、
 flex_ocr_android_toolkitをarrとしてアーカイブしてからインポートして使ってください。
 
-### モデルの初期化方法
-
-モデルは使用する前に1度だけ、初期化してください。
-下記はサンプルアプリから抜粋した例です。
-```Java
-public class FlexApplication extends Application {
-
-    private final static String TAG = FlexApplication.class.getSimpleName();
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        //モデルファイルはassets以下にあらかじめ配置しておく。pathにはassetsからの相対パスを指定する。
-        FlexConfig flexConfig = new FlexConfig(this, "custom_models/sample.ptl");
-        flexConfig.setDetectorModelInputSize(512, 384); //モデルのインプットサイズに合わせる
-        FlexAPI.shared().init(flexConfig);
-    }
-}
-```
-
-### スキャン方法
-
-スキャンするときは、読み取りたい文字列のホワイトリストを渡すこともできます。
+## 使い方
 
 ```Java
-  HashSet<String> whiteList = new HashSet<>();
-  whiteList.add("0000000"); //ハイフン抜きで入れてください
-  flexScanOption = new FlexScanOption(whiteList);
-  ...
 
-  final FlexScanResults results = FlexAPI.shared().scan(image, flexScanOption);
+// モデルファイルはassets以下にあらかじめ配置しておく。pathにはassetsからの相対パスを指定する。
+// モデルの初期化は一度だけ行えばよい
+FlexConfig flexConfig = new FlexConfig(this, "custom_models/sample.ptl");
+flexConfig.setDetectorModelInputSize(512, 384); //モデルのインプットサイズに合わせる
+FlexAPI.shared().init(flexConfig);
+
+// カメラなどからimage(Bitmap or ImageProxy)を取得する
+image = ...        
+        
+HashSet<String> whiteList = new HashSet<>();
+whiteList.add("09063108081"); //ハイフン抜きで入れてください
+FlexScanOption flexScanOption = new FlexScanOption(whiteList);
+final FlexScanResults results = FlexAPI.shared().scan(image, flexScanOption);
 ```
 
-詳細はサンプルアプリの`ReaderActivity`クラスを参照してください。
+詳細はサンプルアプリの`FlexApplication`、`ReaderActivity`クラスを参照してください。
 
 ## サンプルアプリのビルド方法
 
