@@ -23,7 +23,7 @@ flex_ocr_android_toolkitをaarとしてアーカイブしてからインポー�
 
 TODO: mavenリポジトリ化
 
-## 使い方
+## スキャン方法
 
 ```Java
 
@@ -46,6 +46,25 @@ final FlexScanResults results = FlexAPI.shared().scan(image, flexScanOption);
 
 - モデルの初期化 :arrow_right: [FlexApplicationクラス](./app/src/main/java/com/nefrock/flex/app/FlexApplication.java)
 - スキャン処理 :arrow_right: [ReaderActivityクラス](./app/src/main/java/com/nefrock/flex/app/ReaderActivity.java)
+
+## データアップロード方法
+
+```Java
+String key1 = "<your key1>";
+String key2 = "<your key2>";
+String name = "<your name>";
+ImageKind kind = ImageKind.INVOICE_LABEL;
+
+// imageを取得。imageはBitmap or ImageProxy
+
+ImageBullet bullet = new ImageBullet(name, kind, key1, key2, image);
+FlexAPI.shared().uploadImage(this, bullet, new UploaderListener() {
+    @Override
+    public void onComplete(boolean result) {
+        //アップロード完了後に呼ばれる
+    }
+});
+```
 
 ## サンプルアプリのビルド方法
 
