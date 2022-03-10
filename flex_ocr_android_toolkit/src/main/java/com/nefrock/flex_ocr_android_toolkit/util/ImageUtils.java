@@ -99,7 +99,6 @@ public class ImageUtils {
                     }
                 }
             }
-
             Mat yuv_mat = new Mat(h + h / 2, w, CvType.CV_8UC1);
             yuv_mat.put(0, 0, yuv_bytes);
             Imgproc.cvtColor(yuv_mat, mRgba, Imgproc.COLOR_YUV2RGBA_I420, 4);
@@ -107,4 +106,11 @@ public class ImageUtils {
         }
     }
 
+    public static Bitmap imageProxyToBitmap(ImageProxy image) {
+        ImageProxy.PlaneProxy planeProxy = image.getPlanes()[0];
+        ByteBuffer buffer = planeProxy.getBuffer();
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
 }

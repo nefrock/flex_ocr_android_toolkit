@@ -1,7 +1,9 @@
 package com.nefrock.flex_ocr_android_toolkit.api.v0;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 
+import androidx.annotation.NonNull;
 import androidx.camera.core.ImageProxy;
 
 import org.opencv.android.Utils;
@@ -12,6 +14,9 @@ import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResult;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 import com.nefrock.flex_ocr_android_toolkit.builder.ProcessorBuilder;
+import com.nefrock.flex_ocr_android_toolkit.data.S3ImageUploader;
+import com.nefrock.flex_ocr_android_toolkit.data.ImageBullet;
+import com.nefrock.flex_ocr_android_toolkit.data.UploaderListener;
 import com.nefrock.flex_ocr_android_toolkit.processor.extractor.NaiveExtractor;
 import com.nefrock.flex_ocr_android_toolkit.processor.result.BarcodeResult;
 import com.nefrock.flex_ocr_android_toolkit.processor.result.Detection;
@@ -40,7 +45,7 @@ public class FlexAPI {
         return singleton;
     }
 
-    public void init(FlexConfig config) {
+    public void init(@NonNull FlexConfig config) {
         ProcessorBuilder builder = new ProcessorBuilder(config);
         try {
             this.scanner = builder.buildScanner();
@@ -51,7 +56,7 @@ public class FlexAPI {
         }
     }
 
-    public FlexScanResults scan(ImageProxy imageProxy, FlexScanOption option) {
+    public FlexScanResults scan(@NonNull ImageProxy imageProxy, @NonNull FlexScanOption option) {
         Mat rgb = ImageUtils.rgba(imageProxy);
         if (scanner == null) {
             return new FlexScanResults(new ArrayList<>(), FlexExitCode.NOT_INITIALIZED, 0);
@@ -63,13 +68,10 @@ public class FlexAPI {
         return buildFlexScanResults(rawResult, option);
     }
 
-    public FlexScanResults scan(Bitmap bitmap, FlexScanOption option) {
+    public FlexScanResults scan(@NonNull Bitmap bitmap, @NonNull FlexScanOption option) {
         Mat rgb = new Mat();
         //bitMapToMat should return rgb
         Utils.bitmapToMat(bitmap, rgb);
-
-        double[] ones = rgb.get(0,0);
-
         if (scanner == null) {
             return new FlexScanResults(new ArrayList<>(), FlexExitCode.NOT_INITIALIZED, 0);
         }
@@ -80,7 +82,11 @@ public class FlexAPI {
         return buildFlexScanResults(rawResult, option);
     }
 
-    private static  FlexScanResults buildFlexScanResults(ScanResult result, FlexScanOption option) {
+    public void uploadImage(@NonNull Context context, @NonNull ImageBullet bullet, UploaderListener listener) {
+        new S3ImageUploader(listener).uploadImage(context, bullet);
+    }
+
+    private static FlexScanResults buildFlexScanResults(@NonNull ScanResult result, @NonNull FlexScanOption option) {
         NaiveExtractor extractor;
         if(option.getWhiteList() == null) {
             extractor = new NaiveExtractor();

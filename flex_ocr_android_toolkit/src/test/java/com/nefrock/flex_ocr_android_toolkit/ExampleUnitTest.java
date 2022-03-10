@@ -15,6 +15,9 @@ import android.graphics.BitmapFactory;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 
+import com.nefrock.flex_ocr_android_toolkit.api.v0.FlexAPI;
+import com.nefrock.flex_ocr_android_toolkit.data.ImageKind;
+
 import java.io.IOException;
 import java.io.InputStream;
 
