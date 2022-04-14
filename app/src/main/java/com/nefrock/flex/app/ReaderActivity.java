@@ -77,9 +77,12 @@ public class ReaderActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_FOR_PERMISSIONS);
         }
 
-        HashSet<String> whiteList = new HashSet<>();
-        whiteList.add("09063108081"); //ハイフン抜きで入れてください
-        flexScanOption = new FlexScanOption(whiteList);
+       // HashSet<String> whiteList = new HashSet<>();
+       // whiteList.add("000-0000-0000"); //ハイフン抜きで入れてください
+       // flexScanOption = new FlexScanOption(whiteList);
+        
+       // サンプルではホワイトリストを設定しない
+       flexScanOption = new FlexScanOption();
     }
 
     private void startCamera() {
