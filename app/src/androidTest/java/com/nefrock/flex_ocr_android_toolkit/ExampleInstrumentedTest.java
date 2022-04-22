@@ -43,6 +43,7 @@ public class ExampleInstrumentedTest {
         Context appCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
         FlexAPI_V1.shared().init(new FlexConfig(appCtx, "custom_models/sample.ptl"));
     }
+
     @Test
     public void scanJapaneseTextsTest() throws IOException {
         Bitmap bitmap = this.readAssetImage("test_images/japanese-sample.jpg");
@@ -69,12 +70,10 @@ public class ExampleInstrumentedTest {
         }
     }
 
-
     private Bitmap readAssetImage(String path) throws IOException {
         Context appCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
         InputStream is = appCtx.getAssets().open(path);
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         return bitmap;
     }
-
 }
