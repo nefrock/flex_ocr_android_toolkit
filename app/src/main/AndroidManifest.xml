@@ -10,12 +10,12 @@
 
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <permission
-        android:name="android.permission.FLASHLIGHT"
-        android:description="@string/permdesc_flashlight"
-        android:label="@string/permlab_flashlight"
-        android:permissionGroup="android.permission-group.HARDWARE_CONTROLS"
-        android:protectionLevel="normal" />
+<!--    <permission-->
+<!--        android:name="android.permission.FLASHLIGHT"-->
+<!--        android:description="@string/permdesc_flashlight"-->
+<!--        android:label="@string/permlab_flashlight"-->
+<!--        android:permissionGroup="android.permission-group.HARDWARE_CONTROLS"-->
+<!--        android:protectionLevel="normal" />-->
 
     <application
         android:name=".FlexApplication"
