@@ -1,15 +1,14 @@
 package com.nefrock.flex_ocr_android_toolkit.processor.builder;
 
-import com.google.mlkit.vision.text.TextRecognition;
-import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Identity;
-import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.GoogleRecognizer;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteNumberPlateDetector;
+import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.CarNumberRecognizer;
+import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.NaiveGoogleRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.Recognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.scanner.Scanner;
-import com.nefrock.flex_ocr_android_toolkit.processor.scanner.TwoPathsScanner;
+import com.nefrock.flex_ocr_android_toolkit.processor.scanner.DetectorRecognizerScanner;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,7 +27,7 @@ public class ScannerBuilder {
     public Scanner build() {
         Detector detector = buildDetector();
         Recognizer recognizer = buildRecognizer();
-        Scanner scanner = new TwoPathsScanner(detector, recognizer);
+        Scanner scanner = new DetectorRecognizerScanner(detector, recognizer);
         return scanner;
     }
 
@@ -36,17 +35,25 @@ public class ScannerBuilder {
         switch(config.getDetectorKind()) {
             case IDENTITY:
                 return new Identity();
+            case CAR_NUMBER_PLATE:
+                return new TFLiteNumberPlateDetector(
+                        config.getContext(),
+                        config.getDetectorModelPath(),
+                        config.getDetectorInputSize()
+                );
             default:
-                return null;
+                return new Identity();
         }
     }
 
     private Recognizer buildRecognizer() {
         switch(config.getRecognizerKind()) {
             case ALL_EN:
-                return new GoogleRecognizer(false);
+                return new NaiveGoogleRecognizer(false);
             case ALL_JP:
-                return new GoogleRecognizer(true);
+                return new NaiveGoogleRecognizer(true);
+            case CAR_NUMBER_PLATE:
+                return new CarNumberRecognizer();
             default:
                 return null;
         }

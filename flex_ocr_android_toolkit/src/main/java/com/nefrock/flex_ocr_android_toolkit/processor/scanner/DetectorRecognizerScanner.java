@@ -9,23 +9,25 @@ import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.DetectorResult;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.Recognizer;
 
-public class TwoPathsScanner implements Scanner{
+import org.opencv.core.Mat;
+
+public class DetectorRecognizerScanner implements Scanner{
 
     private final Detector detector;
     private final Recognizer recognizer;
 
-    public TwoPathsScanner(Detector detector, Recognizer recognizer) {
+    public DetectorRecognizerScanner(Detector detector, Recognizer recognizer) {
         this.detector = detector;
         this.recognizer = recognizer;
     }
 
+    @Override
     public void init() {
         detector.init();
         recognizer.init();
     }
 
-    public void scan(Bitmap bitmap, FlexScanOption option, OnScanListener<FlexScanResults> listener) {
-        DetectorResult detectorResult = detector.process(bitmap, option);
-        recognizer.process(bitmap, detectorResult, option, listener);
+    public void scan(Mat rgb, FlexScanOption option, OnScanListener<FlexScanResults> listener) {
+        recognizer.process(rgb, detector, option, listener);
     }
 }

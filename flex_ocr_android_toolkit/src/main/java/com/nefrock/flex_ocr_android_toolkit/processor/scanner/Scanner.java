@@ -11,5 +11,6 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
 import org.opencv.core.Mat;
 
 public interface Scanner {
-    void scan(Bitmap bitmap, FlexScanOption option, OnScanListener<FlexScanResults> listener);
+    void scan(Mat rgb, FlexScanOption option, OnScanListener<FlexScanResults> listener);
+    void init();
 }

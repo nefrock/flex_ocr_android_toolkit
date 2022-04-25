@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.util.Size;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -41,8 +42,14 @@ public class ExampleInstrumentedTest {
     public void setupResources() throws IOException {
         Context appCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
         FlexConfig config = new FlexConfig(appCtx);
-        config.setDetector(DetectorKind.IDENTITY, new EmptyModelConfig(), null);
-        config.setRecognizer(RecognizerKind.ALL_JP, new EmptyModelConfig(), null);
+        config.setDetector(DetectorKind.IDENTITY,
+                new Size(-1,-1), //dummy
+                new EmptyModelConfig(),
+                null);
+        config.setRecognizer(RecognizerKind.ALL_JP,
+                new Size(300,300),
+                new EmptyModelConfig(),
+                null);
         FlexAPI.shared().init(config);
     }
 

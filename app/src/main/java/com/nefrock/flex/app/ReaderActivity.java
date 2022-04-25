@@ -1,12 +1,8 @@
 package com.nefrock.flex.app;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,14 +24,14 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.google.common.util.concurrent.ListenableFuture;
-
-import com.google.mlkit.vision.common.InputImage;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexExitCode;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
-import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ReaderActivity extends AppCompatActivity {
 
@@ -78,11 +74,11 @@ public class ReaderActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_FOR_PERMISSIONS);
         }
 
-       // HashSet<String> whiteList = new HashSet<>();
-       // whiteList.add("00000000000"); //ハイフン抜きで入れてください
-       // flexScanOption = new FlexScanOption(whiteList);
-       // サンプルではホワイトリストを設定しない
-       flexScanOption = new FlexScanOption();
+        // HashSet<String> whiteList = new HashSet<>();
+        // whiteList.add("00000000000"); //ハイフン抜きで入れてください
+        // flexScanOption = new FlexScanOption(whiteList);
+        // サンプルではホワイトリストを設定しない
+        flexScanOption = new FlexScanOption();
     }
 
     private void startCamera() {
@@ -108,23 +104,17 @@ public class ReaderActivity extends AppCompatActivity {
                                 image.close();
                                 return;
                             }
-
-                            Bitmap bitmap = ImageUtils.imageToToBitmap(mediaImage, 0);
-                            if(bitmap == null) {
-                                image.close();
-                                return;
-                            }
-                            FlexAPI.shared().scan(bitmap, flexScanOption, new OnScanListener<FlexScanResults>() {
+                            FlexAPI.shared().scan(image, flexScanOption, new OnScanListener<FlexScanResults>() {
                                 @Override
                                 public void onScan(FlexScanResults result) {
-                                    if(result.getExitCode() !=  FlexExitCode.DONE) {
+                                    if (result.getExitCode() != FlexExitCode.DONE) {
                                         image.close();
                                         return;
                                     }
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                        overlayView.drawScanResult(result);
+                                            overlayView.drawScanResult(result);
                                             image.close();
                                         }
                                     });

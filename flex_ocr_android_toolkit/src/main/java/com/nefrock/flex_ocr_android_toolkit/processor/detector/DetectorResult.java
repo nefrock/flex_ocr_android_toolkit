@@ -18,6 +18,10 @@ public class DetectorResult {
         this.detections = Collections.emptyList();
     }
 
+    public List<Detection> getDetections() {
+        return this.detections;
+    }
+
     public boolean hasClass(int cls) {
         for(Detection d : this.detections) {
             if (d.getClassID() == cls) {

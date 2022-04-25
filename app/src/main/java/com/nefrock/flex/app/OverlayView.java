@@ -81,7 +81,6 @@ public class OverlayView extends View {
             Rect boundingBox = rotate90(bbox, ratio);
             //draw bbox
             c.drawRect(boundingBox, bboxBoxPaint);
-
             String text = result.getText();
             //draw text
             if(text != null) {

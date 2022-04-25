@@ -1,37 +1,39 @@
 package com.nefrock.flex_ocr_android_toolkit.api.v1;
 
 import android.content.Context;
+import android.util.Size;
 
 public class FlexConfig {
     private final Context context;
 
     private DetectorKind detectorKind;
     private String detectorModelPath;
-    private int detectorModelInputHeight;
-    private int detectorModelInputWidth;
+    private Size detectorInputSize;
 
     private RecognizerKind recognizerKind;
     private String recognizerModelPath;
+    private Size recognizerInputSize;
 
     public FlexConfig(Context c) {
         this.context = c;
-        this.detectorModelInputWidth = 512;
-        this.detectorModelInputHeight = 384;
     }
 
-    public void setDetector(DetectorKind kind, FlexModelSpecificConfig detectorConfig, String path) {
+    public void setDetector(DetectorKind kind,
+                            Size inputSize,
+                            FlexModelSpecificConfig detectorConfig,
+                            String path) {
+        this.detectorInputSize = inputSize;
         this.detectorKind = kind;
         this.detectorModelPath = path;
     }
 
-    public void setRecognizer(RecognizerKind kind, FlexModelSpecificConfig recognizerConfig, String path) {
+    public void setRecognizer(RecognizerKind kind,
+                              Size inputSize,
+                              FlexModelSpecificConfig recognizerConfig,
+                              String path) {
+        this.recognizerInputSize = inputSize;
         this.recognizerKind = kind;
         this.recognizerModelPath = path;
-    }
-
-    public void setDetectorModelInputSize(int width, int height) {
-        this.detectorModelInputWidth = width;
-        this.detectorModelInputHeight = height;
     }
 
     public Context getContext() {
@@ -46,12 +48,8 @@ public class FlexConfig {
         return detectorModelPath;
     }
 
-    public int getDetectorModelInputHeight() {
-        return detectorModelInputHeight;
-    }
-
-    public int getDetectorModelInputWidth() {
-        return detectorModelInputWidth;
+    public Size getDetectorInputSize() {
+        return detectorInputSize;
     }
 
     public RecognizerKind getRecognizerKind() {
@@ -60,5 +58,9 @@ public class FlexConfig {
 
     public String getRecognizerModelPath() {
         return recognizerModelPath;
+    }
+
+    public Size getRecognizerInputSize() {
+        return recognizerInputSize;
     }
 }

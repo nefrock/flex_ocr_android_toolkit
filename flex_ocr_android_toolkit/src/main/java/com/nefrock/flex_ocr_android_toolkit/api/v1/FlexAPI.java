@@ -1,28 +1,17 @@
 package com.nefrock.flex_ocr_android_toolkit.api.v1;
 
 import android.graphics.Bitmap;
-import android.graphics.Rect;
-import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
+import androidx.camera.core.ImageProxy;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.text.Text;
-import com.google.mlkit.vision.text.TextRecognition;
-import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions;
-import com.nefrock.flex_ocr_android_toolkit.api.FlexExitCode;
-import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResult;
-import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 import com.nefrock.flex_ocr_android_toolkit.processor.builder.ScannerBuilder;
 import com.nefrock.flex_ocr_android_toolkit.processor.scanner.Scanner;
+import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
 
 public class FlexAPI {
 
@@ -42,14 +31,17 @@ public class FlexAPI {
     public void init(@NonNull FlexConfig config) {
         ScannerBuilder builder = new ScannerBuilder(config);
         this.scanner = builder.build();
+        this.scanner.init();
     }
 
-    /**
-     * アルファ版のI/F。シグニチャは今後よくよく考えること。
-     * @param bitmap
-     * @param listener
-     */
-    public void scan(@NonNull Bitmap bitmap, FlexScanOption option , @NonNull OnScanListener<FlexScanResults> listener) {
-        scanner.scan(bitmap, option, listener);
+    public void scan(@NonNull ImageProxy image, @NonNull FlexScanOption option , @NonNull OnScanListener<FlexScanResults> listener) {
+        Mat mat = ImageUtils.rgba(image);
+        scanner.scan(mat, option, listener);
+    }
+
+    public void scan(@NonNull Bitmap image, @NonNull FlexScanOption option , @NonNull OnScanListener<FlexScanResults> listener) {
+        Mat mat = new Mat();
+        Utils.bitmapToMat(image, mat);
+        scanner.scan(mat, option, listener);
     }
 }
