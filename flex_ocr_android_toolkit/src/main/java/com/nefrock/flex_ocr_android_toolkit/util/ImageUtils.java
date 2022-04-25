@@ -106,11 +106,62 @@ public class ImageUtils {
         }
     }
 
-    public static Bitmap imageProxyToBitmap(ImageProxy image) {
-        ImageProxy.PlaneProxy planeProxy = image.getPlanes()[0];
-        ByteBuffer buffer = planeProxy.getBuffer();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    // ImageProxy → Bitmap
+    public static Bitmap imageToToBitmap(Image image, int rotationDegrees) {
+        byte[] data = imageToByteArray(image);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        if (rotationDegrees == 0) {
+            return bitmap;
+        } else {
+            return rotateBitmap(bitmap, rotationDegrees);
+        }
+    }
+
+    // Bitmapの回転
+    private static Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees) {
+        Matrix mat = new Matrix();
+        mat.postRotate(rotationDegrees);
+        return Bitmap.createBitmap(bitmap, 0, 0,
+                bitmap.getWidth(), bitmap.getHeight(), mat, true);
+    }
+
+    // Image → JPEGのバイト配列
+    private static byte[] imageToByteArray(Image image) {
+        byte[] data = null;
+        if (image.getFormat() == ImageFormat.JPEG) {
+            Image.Plane[] planes = image.getPlanes();
+            ByteBuffer buffer = planes[0].getBuffer();
+            data = new byte[buffer.capacity()];
+            buffer.get(data);
+            return data;
+        } else if (image.getFormat() == ImageFormat.YUV_420_888) {
+            data = NV21toJPEG(YUV_420_888toNV21(image),
+                    image.getWidth(), image.getHeight());
+        }
+        return data;
+    }
+
+    // YUV_420_888 → NV21
+    private static byte[] YUV_420_888toNV21(Image image) {
+        byte[] nv21;
+        ByteBuffer yBuffer = image.getPlanes()[0].getBuffer();
+        ByteBuffer uBuffer = image.getPlanes()[1].getBuffer();
+        ByteBuffer vBuffer = image.getPlanes()[2].getBuffer();
+        int ySize = yBuffer.remaining();
+        int uSize = uBuffer.remaining();
+        int vSize = vBuffer.remaining();
+        nv21 = new byte[ySize + uSize + vSize];
+        yBuffer.get(nv21, 0, ySize);
+        vBuffer.get(nv21, ySize, vSize);
+        uBuffer.get(nv21, ySize + vSize, uSize);
+        return nv21;
+    }
+
+    // NV21 → JPEG
+    private static byte[] NV21toJPEG(byte[] nv21, int width, int height) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        YuvImage yuv = new YuvImage(nv21, ImageFormat.NV21, width, height, null);
+        yuv.compressToJpeg(new Rect(0, 0, width, height), 100, out);
+        return out.toByteArray();
     }
 }

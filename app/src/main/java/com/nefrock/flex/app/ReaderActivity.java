@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +29,13 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import com.google.mlkit.vision.common.InputImage;
+import com.nefrock.flex_ocr_android_toolkit.api.FlexExitCode;
+import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
+import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 
 public class ReaderActivity extends AppCompatActivity {
 
@@ -102,14 +109,27 @@ public class ReaderActivity extends AppCompatActivity {
                                 return;
                             }
 
-//                            final FlexScanResults results = FlexAPI_V1.shared().scan(image, flexScanOption);
-                            runOnUiThread(new Runnable() {
+                            Bitmap bitmap = ImageUtils.imageToToBitmap(mediaImage, 0);
+                            if(bitmap == null) {
+                                image.close();
+                                return;
+                            }
+                            FlexAPI.shared().scan(bitmap, flexScanOption, new OnScanListener<FlexScanResults>() {
                                 @Override
-                                public void run() {
-//                                    overlayView.drawScanResult(results);
+                                public void onScan(FlexScanResults result) {
+                                    if(result.getExitCode() !=  FlexExitCode.DONE) {
+                                        image.close();
+                                        return;
+                                    }
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                        overlayView.drawScanResult(result);
+                                            image.close();
+                                        }
+                                    });
                                 }
                             });
-                            image.close();
                         }
                     });
                     CameraSelector cameraSelector = new CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build();

@@ -82,9 +82,9 @@ public class OverlayView extends View {
             //draw bbox
             c.drawRect(boundingBox, bboxBoxPaint);
 
+            String text = result.getText();
             //draw text
-            if(result.getType() != FlexScanResultType.INVOICE_LABEL) {
-                String text = result.getText();
+            if(text != null) {
                 c.drawRect(boundingBox.left - 1, boundingBox.top - TEXT_SIZE, boundingBox.right + 1, boundingBox.top, textBackgroundPaint);
                 c.drawText(text, boundingBox.left, boundingBox.top - 3, textPaint);
             }

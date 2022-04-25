@@ -1,5 +1,6 @@
 package com.nefrock.flex_ocr_android_toolkit.data;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 
 import androidx.camera.core.ImageProxy;
@@ -10,7 +11,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-import static com.nefrock.flex_ocr_android_toolkit.util.ImageUtils.imageProxyToBitmap;
+import static com.nefrock.flex_ocr_android_toolkit.util.ImageUtils.imageToToBitmap;
 
 public class ImageBullet {
     private final String fileName;
@@ -32,8 +33,9 @@ public class ImageBullet {
         this.fileName =  uuid.toString() + ".jpg";
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
     public ImageBullet(String name, ImageKind kind, String key1, String key2, ImageProxy imageProxy) {
-        this(name, kind, key1, key2, imageProxyToBitmap(imageProxy));
+        this(name, kind, key1, key2, imageToToBitmap(imageProxy.getImage(), 0));
     }
 
     String getFileName() {
