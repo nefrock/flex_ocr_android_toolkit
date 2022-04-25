@@ -1,4 +1,4 @@
-package com.nefrock.flex_ocr_android_toolkit;
+package com.nefrock.flex.app;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,23 +12,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
-
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResult;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
-import com.nefrock.flex_ocr_android_toolkit.api.v0.FlexConfig;
-import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI_V1;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.DetectorKind;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.EmptyModelConfig;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.RecognizerKind;
+import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.Recognizer;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import kotlinx.coroutines.sync.Mutex;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -41,7 +40,10 @@ public class ExampleInstrumentedTest {
     @Before
     public void setupResources() throws IOException {
         Context appCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        FlexAPI_V1.shared().init(new FlexConfig(appCtx, "custom_models/sample.ptl"));
+        FlexConfig config = new FlexConfig(appCtx);
+        config.setDetector(DetectorKind.IDENTITY, new EmptyModelConfig(), null);
+        config.setRecognizer(RecognizerKind.ALL_JP, new EmptyModelConfig(), null);
+        FlexAPI.shared().init(config);
     }
 
     @Test
@@ -51,7 +53,8 @@ public class ExampleInstrumentedTest {
         //スキャンは非同期で行われる。
         //ここではlatchを使って、スキャンが終わるまで、テストメソッド内でまつ。
         CountDownLatch latch = new CountDownLatch(1);
-        FlexAPI_V1.shared().scan(bitmap, new OnScanListener<FlexScanResults>() {
+        FlexScanOption option = new FlexScanOption();
+        FlexAPI.shared().scan(bitmap, option, new OnScanListener<FlexScanResults>() {
             @Override
             public void onScan(FlexScanResults results) {
                 List<FlexScanResult> details = results.getResults();

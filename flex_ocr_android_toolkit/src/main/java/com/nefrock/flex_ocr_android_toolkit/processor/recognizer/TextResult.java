@@ -1,4 +1,4 @@
-package com.nefrock.flex_ocr_android_toolkit.processor.result;
+package com.nefrock.flex_ocr_android_toolkit.processor.recognizer;
 
 import android.graphics.Rect;
 
@@ -29,11 +29,4 @@ public class TextResult {
     public org.opencv.core.Rect getCvBoundingBox() {
         return new org.opencv.core.Rect(boundingBox.left, boundingBox.top, boundingBox.width(), boundingBox.height());
     }
-
-//    public boolean isTelNumber() {
-//        if(this.text.toLowerCase().contains("tel")) {
-//            return true;
-//        }
-//        return this.text.toLowerCase().matches("[0123456789\\-]{1,}");
-//    }
 }

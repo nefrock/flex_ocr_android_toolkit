@@ -1,13 +1,13 @@
 package com.nefrock.flex_ocr_android_toolkit.processor.detector;
 
-import com.nefrock.flex_ocr_android_toolkit.processor.result.DetectorResult;
+import android.graphics.Bitmap;
+
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 
 import org.opencv.core.Mat;
 
 public interface Detector {
-
-    //TODO: 非同期処理にする？
-    DetectorResult process(Mat image, int x0, int y0);
+    DetectorResult process(Bitmap image, FlexScanOption option);
     void init();
     void close();
 }

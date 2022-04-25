@@ -1,18 +1,12 @@
 package com.nefrock.flex.app;
 
 import android.app.Application;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
-import com.nefrock.flex_ocr_android_toolkit.api.v0.FlexAPI;
-import com.nefrock.flex_ocr_android_toolkit.api.v0.FlexConfig;
-import com.nefrock.flex_ocr_android_toolkit.data.ImageKind;
-import com.nefrock.flex_ocr_android_toolkit.data.ImageBullet;
-import com.nefrock.flex_ocr_android_toolkit.data.UploaderListener;
-
-import java.io.IOException;
-import java.io.InputStream;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.DetectorKind;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.EmptyModelConfig;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.RecognizerKind;
 
 public class FlexApplication extends Application {
 
@@ -23,8 +17,9 @@ public class FlexApplication extends Application {
         super.onCreate();
         // モデルファイルはassets以下にあらかじめ配置しておく。pathにはassetsからの相対パスを指定する。
         // モデルの初期化は一度だけ行えばよい
-        FlexConfig flexConfig = new FlexConfig(this, "custom_models/sample.ptl");
-        flexConfig.setDetectorModelInputSize(512, 384); //モデルのインプットサイズに合わせる
-        FlexAPI.shared().init(flexConfig);
+        FlexConfig config = new FlexConfig(this);
+        config.setDetector(DetectorKind.IDENTITY, new EmptyModelConfig(), null);
+        config.setRecognizer(RecognizerKind.ALL_JP, new EmptyModelConfig(), null);
+        FlexAPI.shared().init(config);
     }
 }

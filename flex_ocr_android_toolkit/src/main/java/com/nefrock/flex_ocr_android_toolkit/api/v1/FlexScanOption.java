@@ -1,4 +1,4 @@
-package com.nefrock.flex_ocr_android_toolkit.api.v0;
+package com.nefrock.flex_ocr_android_toolkit.api.v1;
 
 import java.util.Set;
 

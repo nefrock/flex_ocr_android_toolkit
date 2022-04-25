@@ -1,22 +1,17 @@
-package com.nefrock.flex_ocr_android_toolkit.processor.result;
+package com.nefrock.flex_ocr_android_toolkit.processor.detector;
 
 import android.graphics.Rect;
 
 
-public class BarcodeResult {
-
-    private final String text;
+public class Detection {
     private final double confidence;
     private final Rect boundingBox;
+    private final int classID;
 
-    public BarcodeResult(String text, double confidence, Rect boundingBox) {
-        this.text = text;
-        this.confidence = confidence;
+    public Detection(Rect boundingBox, double confidence, int classId) {
         this.boundingBox = boundingBox;
-    }
-
-    public String getText() {
-        return text;
+        this.confidence = confidence;
+        this.classID = classId;
     }
 
     public double getConfidence() {
@@ -27,7 +22,13 @@ public class BarcodeResult {
         return boundingBox;
     }
 
+    public int getClassID() { return this.classID; }
+
     public org.opencv.core.Rect getCvBoundingBox() {
         return new org.opencv.core.Rect(boundingBox.left, boundingBox.top, boundingBox.width(), boundingBox.height());
+    }
+
+    public int area() {
+        return boundingBox.width() * boundingBox.height();
     }
 }

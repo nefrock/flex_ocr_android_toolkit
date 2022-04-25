@@ -1,13 +1,11 @@
 package com.nefrock.flex.app;
 
-import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,10 +28,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
-import com.nefrock.flex_ocr_android_toolkit.api.v0.FlexAPI;
-import com.nefrock.flex_ocr_android_toolkit.api.v0.FlexScanOption;
-import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 
 public class ReaderActivity extends AppCompatActivity {
 
@@ -52,7 +47,6 @@ public class ReaderActivity extends AppCompatActivity {
     private ImageAnalysis imageAnalysis = null;
     private ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
     private final Size resolutionSize = new Size(2448, 3264);
-
     private FlexScanOption flexScanOption;
 
     @Override
@@ -108,11 +102,11 @@ public class ReaderActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            final FlexScanResults results = FlexAPI.shared().scan(image, flexScanOption);
+//                            final FlexScanResults results = FlexAPI_V1.shared().scan(image, flexScanOption);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    overlayView.drawScanResult(results);
+//                                    overlayView.drawScanResult(results);
                                 }
                             });
                             image.close();

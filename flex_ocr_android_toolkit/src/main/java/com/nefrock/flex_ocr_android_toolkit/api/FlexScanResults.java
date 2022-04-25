@@ -1,6 +1,5 @@
 package com.nefrock.flex_ocr_android_toolkit.api;
 
-import com.nefrock.flex_ocr_android_toolkit.processor.result.ScanResult;
 
 import java.util.Collections;
 import java.util.List;
