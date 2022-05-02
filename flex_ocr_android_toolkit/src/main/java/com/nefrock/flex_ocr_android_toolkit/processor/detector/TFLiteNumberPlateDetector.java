@@ -68,7 +68,7 @@ public class TFLiteNumberPlateDetector implements Detector {
         this.paddingW = 0;
         this.inputX = inputSize.getWidth();
         this.inputY = inputSize.getHeight();
-        this.classPredThre = 0.01f;
+        this.classPredThre = 0.1f;
         this.nmsThre = 0.3f;
     }
 
