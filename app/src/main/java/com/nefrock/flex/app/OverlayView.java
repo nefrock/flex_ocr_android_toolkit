@@ -20,7 +20,7 @@ import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 
 public class OverlayView extends View {
 
-    private static final float TEXT_SIZE = 20f;
+    private static final float TEXT_SIZE = 40f;
     private static final float BIG_TEXT_SIZE = 48f;
     private static final float STROKE_WIDTH = 4.0f;
 
