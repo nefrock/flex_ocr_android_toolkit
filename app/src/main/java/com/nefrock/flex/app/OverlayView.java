@@ -78,7 +78,7 @@ public class OverlayView extends View {
         c.drawText("latency(ms): " + this.flexScanResults.getElapsedTime() , 10, this.getTop() + 50, bigTextPaint);
         for(FlexScanResult result : this.flexScanResults.getResults()) {
             Rect bbox = result.getBoundingBox();
-            Rect boundingBox = rotate90(bbox, ratio);
+            Rect boundingBox = scaling(bbox, ratio);
             //draw bbox
             c.drawRect(boundingBox, bboxBoxPaint);
             String text = result.getText();
@@ -89,13 +89,19 @@ public class OverlayView extends View {
             }
         }
     }
-
-    private Rect rotate90(Rect boundingBox, double ratio) {
+    private Rect rotate90(Rect boundingBox) {
         int h = this.resolutionSize.getWidth();
         int left = h - boundingBox.top;
         int top = boundingBox.left;
         int right = h - boundingBox.bottom;
         int bottom = boundingBox.right;
+        return new Rect(left, top, right, bottom);
+    }
+    private Rect scaling(Rect boundingBox, double ratio) {
+        int left = boundingBox.left;
+        int top = boundingBox.top;
+        int right = boundingBox.right;
+        int bottom = boundingBox.bottom;
         return new Rect((int) (left * ratio), (int) (top * ratio), (int) (right * ratio), (int) (bottom * ratio));
     }
 }

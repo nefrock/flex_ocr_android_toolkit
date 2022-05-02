@@ -3,6 +3,7 @@ package com.nefrock.flex.app;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +30,7 @@ import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
+import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,7 +51,8 @@ public class ReaderActivity extends AppCompatActivity {
     private Preview preview = null;
     private ImageAnalysis imageAnalysis = null;
     private ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
-    private final Size resolutionSize = new Size(2448, 3264);
+    //private final Size resolutionSize = new Size(2448, 3264);
+    private final Size resolutionSize = new Size(768, 1024);
     private FlexScanOption flexScanOption;
 
     @Override
@@ -104,17 +107,19 @@ public class ReaderActivity extends AppCompatActivity {
                                 image.close();
                                 return;
                             }
-                            FlexAPI.shared().scan(image, flexScanOption, new OnScanListener<FlexScanResults>() {
+
+                            Bitmap bitmap = ImageUtils.imageToToBitmap(image.getImage(), 90);
+                            FlexAPI.shared().scan(bitmap, flexScanOption, new OnScanListener<FlexScanResults>() {
                                 @Override
-                                public void onScan(FlexScanResults result) {
-                                    if (result.getExitCode() != FlexExitCode.DONE) {
+                                public void onScan(FlexScanResults results) {
+                                    if (results.getExitCode() != FlexExitCode.DONE) {
                                         image.close();
                                         return;
                                     }
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            overlayView.drawScanResult(result);
+                                            overlayView.drawScanResult(results);
                                             image.close();
                                         }
                                     });
