@@ -54,8 +54,8 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:2.8.0'
 
     //mlkit
-    implementation 'com.google.mlkit:text-recognition:16.0.0-beta3'
-    implementation 'com.google.mlkit:text-recognition-japanese:16.0.0-beta3'
+    implementation 'com.google.mlkit:text-recognition:16.0.0-beta4'
+    implementation 'com.google.mlkit:text-recognition-japanese:16.0.0-beta4'
     implementation 'com.google.mlkit:barcode-scanning:17.0.2'
 
     //aws
