@@ -1,10 +1,14 @@
 package com.nefrock.flex_ocr_android_toolkit.processor.builder;
 
+import android.util.Size;
+
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.Center;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Identity;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteNumberPlateDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.CarNumberRecognizer;
+import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.FlexGeneralRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.NaiveGoogleRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.Recognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.scanner.Scanner;
@@ -35,6 +39,8 @@ public class ScannerBuilder {
         switch(config.getDetectorKind()) {
             case IDENTITY:
                 return new Identity();
+            case CENTER:
+                return new Center((Size)config.getDetectorConfig().getHint("size"));
             case CAR_NUMBER_PLATE:
                 return new TFLiteNumberPlateDetector(
                         config.getContext(),
@@ -48,17 +54,18 @@ public class ScannerBuilder {
 
     private Recognizer buildRecognizer() {
         switch(config.getRecognizerKind()) {
-            case ALL_EN:
+            case G_ALL_EN:
                 return new NaiveGoogleRecognizer(false);
-            case ALL_JP:
+            case G_ALL_JP:
                 return new NaiveGoogleRecognizer(true);
             case CAR_NUMBER_PLATE:
                 return new CarNumberRecognizer();
+            case FLEX_ALL_JP:
+                return new FlexGeneralRecognizer(config.getContext(), config.getRecognizerModelPath(), config.getRecognizerInputSize());
             default:
                 return null;
         }
     }
-
 
 //    public HybridScanner buildScanner() throws IOException {
 //        String filePath = config.getDetectorModelPath();

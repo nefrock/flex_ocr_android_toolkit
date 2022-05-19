@@ -4,7 +4,7 @@ import android.app.Application;
 import android.util.Size;
 
 import com.nefrock.flex_ocr_android_toolkit.api.v1.DetectorKind;
-import com.nefrock.flex_ocr_android_toolkit.api.v1.EmptyModelConfig;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.ModelConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.RecognizerKind;
@@ -20,16 +20,30 @@ public class FlexApplication extends Application {
         // モデルの初期化は一度だけ行えばよい
         FlexConfig config = new FlexConfig(this);
 
-        //日本語
-        config.setDetector(DetectorKind.IDENTITY,
+
+        //日本語(画面中央)
+        ModelConfig detectorConfig = new ModelConfig();
+        detectorConfig.setHint("size", new Size(200 * 2, 31 * 2));
+        config.setDetector(DetectorKind.CENTER,
                 new Size(-1,-1),
-                new EmptyModelConfig(),
+                detectorConfig,
                 null);
-        config.setRecognizer(RecognizerKind.ALL_JP,
-                new Size(-1, -1),
-                new EmptyModelConfig(),
-                null);
+        config.setRecognizer(RecognizerKind.FLEX_ALL_JP,
+                new Size(200,31),
+                new ModelConfig(),
+                "custom_models/crnn.tflite");
         FlexAPI.shared().init(config);
+
+        //日本語(画面全体)
+//        config.setDetector(DetectorKind.IDENTITY,
+//                new Size(-1,-1),
+//                new ModelConfig(),
+//                null);
+//        config.setRecognizer(RecognizerKind.ALL_JP,
+//                new Size(-1, -1),
+//                new ModelConfig(),
+//                null);
+//        FlexAPI.shared().init(config);
 
         //number plate
 //        config.setDetector(DetectorKind.CAR_NUMBER_PLATE,

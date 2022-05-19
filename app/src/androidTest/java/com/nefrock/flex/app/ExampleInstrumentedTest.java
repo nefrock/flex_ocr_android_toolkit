@@ -17,13 +17,12 @@ import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResult;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.DetectorKind;
-import com.nefrock.flex_ocr_android_toolkit.api.v1.EmptyModelConfig;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.ModelConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.RecognizerKind;
-import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.Recognizer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,13 +43,41 @@ public class ExampleInstrumentedTest {
         FlexConfig config = new FlexConfig(appCtx);
         config.setDetector(DetectorKind.IDENTITY,
                 new Size(-1,-1), //dummy
-                new EmptyModelConfig(),
+                new ModelConfig(),
                 null);
-        config.setRecognizer(RecognizerKind.ALL_JP,
-                new Size(300,300),
-                new EmptyModelConfig(),
-                null);
+//        config.setRecognizer(RecognizerKind.G_ALL_JP,
+//                new Size(300,300),
+//                new ModelConfig(),
+//                null);
+        config.setRecognizer(RecognizerKind.FLEX_ALL_JP,
+                new Size(200,31),
+                new ModelConfig(),
+                "custom_models/crnn.tflite");
         FlexAPI.shared().init(config);
+    }
+
+    @Test
+    public void scanTextTest() throws IOException {
+        Bitmap bitmap = this.readAssetImage("test_images/31x200.jpg");
+        CountDownLatch latch = new CountDownLatch(1);
+        FlexScanOption option = new FlexScanOption();
+        FlexAPI.shared().scan(bitmap, option, new OnScanListener<FlexScanResults>() {
+            @Override
+            public void onScan(FlexScanResults results) {
+                List<FlexScanResult> details = results.getResults();
+                for(FlexScanResult detail : details) {
+                    Rect bbox = detail.getBoundingBox();
+                    String text = detail.getText();
+                    FlexScanResultType typ = detail.getType();
+                }
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await(); //待つ
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

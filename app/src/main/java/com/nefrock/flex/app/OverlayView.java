@@ -89,6 +89,7 @@ public class OverlayView extends View {
             }
         }
     }
+
     private Rect rotate90(Rect boundingBox) {
         int h = this.resolutionSize.getWidth();
         int left = h - boundingBox.top;
@@ -97,6 +98,7 @@ public class OverlayView extends View {
         int bottom = boundingBox.right;
         return new Rect(left, top, right, bottom);
     }
+
     private Rect scaling(Rect boundingBox, double ratio) {
         int left = boundingBox.left;
         int top = boundingBox.top;

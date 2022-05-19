@@ -29,6 +29,7 @@ import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class NaiveGoogleRecognizer implements Recognizer {
 
@@ -48,42 +49,51 @@ public class NaiveGoogleRecognizer implements Recognizer {
     public void process(Mat mat, Detector detector, FlexScanOption option, OnScanListener<FlexScanResults> listener) {
         DetectorResult detectorResult = detector.process(mat, option);
         List<Detection> detections = detectorResult.getDetections();
-        Bitmap bitmap = Bitmap.createBitmap(mat.width(), mat.height(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(mat, bitmap);
-        InputImage img = InputImage.fromBitmap(bitmap, 0);
+
         long t1 = SystemClock.uptimeMillis();
-        this.googleTextRecognizer.process(img)
-                .addOnSuccessListener(new OnSuccessListener<Text>() {
-                    @Override
-                    public void onSuccess(Text visionText) {
-                        long t2 = SystemClock.uptimeMillis();
-                        List<FlexScanResult> results = new ArrayList<>();
-                        List<Text.TextBlock> blocks = visionText.getTextBlocks();
-                        for (Text.TextBlock block : blocks) {
-                            List<Text.Line> lines = block.getLines();
-                            for (Text.Line line : lines) {
-                                List<Text.Element> elements = line.getElements();
-                                for (Text.Element element : elements) {
-                                    String text = element.getText();
-                                    Rect bbox = element.getBoundingBox();
-                                    FlexScanResultType typ = FlexScanResultType.SOMETHING_NICE;
-                                    results.add(new FlexScanResult(typ, text, 1.0, bbox));
+        for (Detection detection: detections) {
+            org.opencv.core.Rect cvBBox = detection.getCvBoundingBox();
+            Mat cropped = new Mat(mat, cvBBox);
+            Bitmap bitmap = Bitmap.createBitmap(cropped.width(), cropped.height(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(cropped, bitmap);
+            InputImage img = InputImage.fromBitmap(bitmap, 0);
+            this.googleTextRecognizer.process(img)
+                    .addOnSuccessListener(new OnSuccessListener<Text>() {
+                        @Override
+                        public void onSuccess(Text visionText) {
+                            long t2 = SystemClock.uptimeMillis();
+                            List<FlexScanResult> results = new ArrayList<>();
+                            List<Text.TextBlock> blocks = visionText.getTextBlocks();
+                            for (Text.TextBlock block : blocks) {
+                                List<Text.Line> lines = block.getLines();
+                                for (Text.Line line : lines) {
+                                    List<Text.Element> elements = line.getElements();
+                                    for (Text.Element element : elements) {
+                                        String text = element.getText();
+                                        Rect bbox = element.getBoundingBox();
+                                        Rect alignedBBox = new Rect(bbox.left + cvBBox.x,
+                                                bbox.top + cvBBox.y,
+                                                bbox.right + cvBBox.x,
+                                                bbox.bottom + cvBBox.y);
+                                        FlexScanResultType typ = FlexScanResultType.SOMETHING_NICE;
+                                        results.add(new FlexScanResult(typ, text, 1.0, alignedBBox));
+                                    }
                                 }
                             }
+                            long elapsed = t2 - t1;
+                            FlexScanResultType typ = FlexScanResultType.SOMETHING_NICE;
+                            results.add(new FlexScanResult(typ, null, 1.0, detection.getBoundingBox()));
+                            listener.onScan(new FlexScanResults(results, elapsed));
                         }
-                        long elapsed = t2 - t1;
-                        listener.onScan(new FlexScanResults(results, elapsed));
-                }
-    })
-            .
-
-    addOnFailureListener(
-                        new OnFailureListener() {
-        @Override
-        public void onFailure (@NonNull Exception e){
-            listener.onScan(new FlexScanResults(FlexExitCode.MODEL_ERROR, e));
+                    })
+                    .addOnFailureListener(
+                                    new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            listener.onScan(new FlexScanResults(FlexExitCode.MODEL_ERROR, e));
+                                        }
+                                    });
         }
-    });
 }
 
     @Override

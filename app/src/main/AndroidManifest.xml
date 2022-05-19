@@ -26,18 +26,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FlexInvoice" >
         <activity
-            android:name="com.nefrock.flex.app.TakePicturesActivity"
-            android:exported="true" />
-        <activity
-            android:name="com.nefrock.flex.app.ValReaderActivity"
-            android:exported="true" />
-        <activity
             android:name="com.nefrock.flex.app.ReaderActivity"
             android:exported="true" />
-        <activity
-            android:name="com.nefrock.flex.app.SettingsActivity"
-            android:exported="true"
-            android:label="@string/title_activity_settings" />
         <activity
             android:name="com.nefrock.flex.app.MainActivity"
             android:exported="true" >
