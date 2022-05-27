@@ -4,11 +4,16 @@ public class CTCTextDecoder {
     private final char[] chars;
 
     public CTCTextDecoder(String str) {
-        this.chars = new char[str.length() + 1];
-        this.chars[str.length()] = 'E'; // empty
+        this.chars = new char[str.length() + 3];
+        // 大文字のアルファベットは使わないので、
+        // 最初と最後のUNKの代わりに使う
+        this.chars[0] = 'A';
+        this.chars[str.length() + 1] = 'A';
+        this.chars[str.length() + 2] = 'A';
         for (int i = 0; i < str.length(); ++i) {
-            this.chars[i] = str.charAt(i);
+            this.chars[i + 1] = str.charAt(i);
         }
+
     }
 
     public String decode(float[][] preds) {
@@ -35,6 +40,7 @@ public class CTCTextDecoder {
             if (index[i] == 0) {
                 continue;
             }
+
             if (i == 0) {
                 sb.append(chars[index[i]]);
                 continue;
@@ -43,6 +49,6 @@ public class CTCTextDecoder {
                 sb.append(chars[index[i]]);
             }
         }
-        return sb.toString().replaceAll("E", "");
+        return sb.toString().replaceAll("A", "");
     }
 }

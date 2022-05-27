@@ -31,7 +31,7 @@ public class FlexApplication extends Application {
         config.setRecognizer(RecognizerKind.FLEX_ALL_JP,
                 new Size(200,31),
                 new ModelConfig(),
-                "custom_models/crnn.tflite");
+                "custom_models/flex-crnn.tflite");
         FlexAPI.shared().init(config);
 
         //日本語(画面全体)

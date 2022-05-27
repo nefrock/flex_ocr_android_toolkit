@@ -52,7 +52,7 @@ public class ExampleInstrumentedTest {
         config.setRecognizer(RecognizerKind.FLEX_ALL_JP,
                 new Size(200,31),
                 new ModelConfig(),
-                "custom_models/crnn.tflite");
+                "custom_models/flex-crnn.tflite");
         FlexAPI.shared().init(config);
     }
 
