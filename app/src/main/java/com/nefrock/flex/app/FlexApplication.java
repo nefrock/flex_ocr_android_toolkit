@@ -20,19 +20,30 @@ public class FlexApplication extends Application {
         // モデルの初期化は一度だけ行えばよい
         FlexConfig config = new FlexConfig(this);
 
-
-        //日本語(画面中央)
+        //送り状
         ModelConfig detectorConfig = new ModelConfig();
-        detectorConfig.setHint("size", new Size(200 * 2, 31 * 2));
-        config.setDetector(DetectorKind.CENTER,
-                new Size(-1,-1),
+        config.setDetector(DetectorKind.INVOICE,
+                new Size(320,320),
                 detectorConfig,
-                null);
-        config.setRecognizer(RecognizerKind.FLEX_ALL_JP,
+                "custom_models/label-tel-detector.tflite");
+        config.setRecognizer(RecognizerKind.INVOICE,
                 new Size(200,31),
                 new ModelConfig(),
                 "custom_models/flex-crnn.tflite");
         FlexAPI.shared().init(config);
+
+        //日本語(画面中央)
+//        ModelConfig detectorConfig = new ModelConfig();
+//        detectorConfig.setHint("size", new Size(200 * 2, 31 * 2));
+//        config.setDetector(DetectorKind.CENTER,
+//                new Size(-1,-1),
+//                detectorConfig,
+//                null);
+//        config.setRecognizer(RecognizerKind.FLEX_ALL_JP,
+//                new Size(200,31),
+//                new ModelConfig(),
+//                "custom_models/flex-crnn.tflite");
+//        FlexAPI.shared().init(config);
 
         //日本語(画面全体)
 //        config.setDetector(DetectorKind.IDENTITY,

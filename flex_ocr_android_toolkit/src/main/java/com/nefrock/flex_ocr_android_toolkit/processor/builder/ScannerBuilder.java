@@ -6,9 +6,11 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Center;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Identity;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteLabelTelDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteNumberPlateDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.CarNumberRecognizer;
-import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.FlexGeneralRecognizer;
+import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.GeneralPurposeRecognizer;
+import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.LabelTelRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.NaiveGoogleRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.Recognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.scanner.Scanner;
@@ -47,6 +49,10 @@ public class ScannerBuilder {
                         config.getDetectorModelPath(),
                         config.getDetectorInputSize()
                 );
+            case INVOICE:
+                return new TFLiteLabelTelDetector(config.getContext(),
+                        config.getDetectorModelPath(),
+                        config.getDetectorInputSize());
             default:
                 return new Identity();
         }
@@ -61,7 +67,9 @@ public class ScannerBuilder {
             case CAR_NUMBER_PLATE:
                 return new CarNumberRecognizer();
             case FLEX_ALL_JP:
-                return new FlexGeneralRecognizer(config.getContext(), config.getRecognizerModelPath(), config.getRecognizerInputSize());
+                return new GeneralPurposeRecognizer(config.getContext(), config.getRecognizerModelPath(), config.getRecognizerInputSize());
+            case INVOICE:
+                return new LabelTelRecognizer(config.getContext(), config.getRecognizerModelPath(), config.getRecognizerInputSize());
             default:
                 return null;
         }

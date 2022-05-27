@@ -5,5 +5,6 @@ public enum RecognizerKind {
     CAR_NUMBER_PLATE,
     G_ALL_EN,
     G_ALL_JP,
-    FLEX_ALL_JP
+    FLEX_ALL_JP,
+    INVOICE
 }

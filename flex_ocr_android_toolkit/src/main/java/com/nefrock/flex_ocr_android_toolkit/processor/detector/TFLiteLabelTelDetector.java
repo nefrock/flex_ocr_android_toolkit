@@ -2,25 +2,6 @@ package com.nefrock.flex_ocr_android_toolkit.processor.detector;
 
 import static java.lang.Math.min;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Rect;
-import android.os.SystemClock;
-import android.util.Log;
-import android.util.Size;
-
-import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
-import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
-
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfFloat;
-import org.opencv.core.MatOfInt;
-import org.opencv.core.MatOfRect2d;
-import org.opencv.core.Rect2d;
-import org.opencv.imgproc.Imgproc;
-import org.tensorflow.lite.Interpreter;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -29,7 +10,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TFLiteNumberPlateDetector implements Detector {
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.os.SystemClock;
+import android.util.Log;
+import android.util.Size;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfRect2d;
+import org.opencv.core.Rect2d;
+import org.opencv.imgproc.Imgproc;
+import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.gpu.GpuDelegate;
+import org.tensorflow.lite.nnapi.NnApiDelegate;
+
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
+import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
+
+
+public class TFLiteLabelTelDetector implements Detector {
 
     private Interpreter interpreter;
     private final Context context;
@@ -59,35 +63,44 @@ public class TFLiteNumberPlateDetector implements Detector {
     private final double paddingW;
     private final double paddingH;
 
-    public TFLiteNumberPlateDetector(Context context,
-                                     String modelPath,
-                                     Size inputSize) {
+
+    public TFLiteLabelTelDetector(Context context, String modelPath, Size size) {
         this.context = context;
         this.modelPath = modelPath;
         this.paddingH = 0;
         this.paddingW = 0;
-        this.inputX = inputSize.getWidth();
-        this.inputY = inputSize.getHeight();
+        this.inputX = size.getWidth();
+        this.inputY = size.getHeight();
         this.classPredThre = 0.1f;
-        this.nmsThre = 0.3f;
+        this.nmsThre = 0.1f;
     }
 
     @Override
-    public DetectorResult process(Mat mat, FlexScanOption option) {
+    public DetectorResult process(Mat image, FlexScanOption option) {
         Mat imgResized = new Mat();
-        Imgproc.resize(mat, imgResized, new org.opencv.core.Size(inputX, inputY));
-        Bitmap bitmap = Bitmap.createBitmap(inputX, inputY, Bitmap.Config.ARGB_8888);
+        Imgproc.resize(image, imgResized, new org.opencv.core.Size(inputX, inputY));
+        Bitmap bitmap = Bitmap.createBitmap((int) inputX, (int) inputY, Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(imgResized, bitmap);
+
+        // Preprocess the image data from 0-255 int to normalized float based
+        // on the provided parameters.
         bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+
         imgData.rewind();
         for (int i = 0; i < inputY; ++i) {
             for (int j = 0; j < inputX; ++j) {
                 int pixelValue = intValues[i * inputY + j];
-                imgData.put((byte) ((pixelValue >> 16) & 0xFF));
-                imgData.put((byte) ((pixelValue >> 8) & 0xFF));
-                imgData.put((byte) (pixelValue & 0xFF));
+//                    // Quantized model
+//                    imgData.put((byte) ((pixelValue >> 16) & 0xFF));
+//                    imgData.put((byte) ((pixelValue >> 8) & 0xFF));
+//                    imgData.put((byte) (pixelValue & 0xFF));
+                imgData.putFloat((float) (2 * ((pixelValue >> 16) & 0xFF) / 255.0) - 1.0f);
+                imgData.putFloat((float) (2 * ((pixelValue >> 8) & 0xFF) / 255.0) - 1.0f);
+                imgData.putFloat((float) (2 * (pixelValue & 0xFF) / 255.0) - 1.0f);
+
             }
         }
+
 
         // Copy the input data into TensorFlow.
         outputLocations = new float[1][NUM_DETECTIONS][4];
@@ -95,28 +108,49 @@ public class TFLiteNumberPlateDetector implements Detector {
         outputScores = new float[1][NUM_DETECTIONS];
         numDetections = new float[1];
         Map<Integer, Object> outputMap = new HashMap<>();
-        outputMap.put(0, outputLocations);
-        outputMap.put(1, outputClasses);
-        outputMap.put(2, outputScores);
-        outputMap.put(3, numDetections);
+        outputMap.put(0, outputScores);
+        outputMap.put(1, outputLocations);
+        outputMap.put(2, numDetections);
+        outputMap.put(3, outputClasses);
+
+//        float[][] o1 = new float[1][1001];
+//        Map<Integer, Object> outputMap = new HashMap<>();
+//        outputMap.put(0, o1);
+
         Object[] inputArray = {imgData};
+
+
         // Run the inference call.
         long t1 = SystemClock.uptimeMillis();
         interpreter.runForMultipleInputsOutputs(inputArray, outputMap);
         long t2 = SystemClock.uptimeMillis();
         Log.d("TFLiteLabelTelDetector", "process=" + (t2 - t1));
 
+
+        // Show the best detections.
+        // after scaling them back to the input size.
+        // You need to use the number of detections from the output and not the NUM_DETECTONS variable
+        // declared on top
+        // because on some models, they don't always output the same total number of detections
+        // For example, your model's NUM_DETECTIONS = 20, but sometimes it only outputs 16 predictions
+        // If you don't use the output's numDetections, you'll get nonsensical data
+
+        // cast from float to integer, use min for safety
         int numDetectionsOutput = min(NUM_DETECTIONS, (int) numDetections[0]);
 
         //NMS
-        List<Rect2d> bboxes = new ArrayList<>();
-        List<Float> scores = new ArrayList<>();
+        List<Rect2d> labelBboxes = new ArrayList<>();
+        List<Float> labelScores = new ArrayList<>();
+        List<Rect2d> telBBoxes = new ArrayList<>();
+        List<Float> telScores = new ArrayList<>();
 
-        int origWidth = mat.width();
-        int origHeight = mat.height();
+        int origWidth = image.width();
+        int origHeight = image.height();
 
         for (int i = 0; i < numDetectionsOutput; ++i) {
+            int classId = (int) (outputClasses[0][i] + 0.1);
             float score = outputScores[0][i];
+
             int x = (int) (outputLocations[0][i][1] * origWidth);
             int y = (int) (outputLocations[0][i][0] * origHeight);
             int x1 = (int) (outputLocations[0][i][3] * origWidth);
@@ -127,11 +161,20 @@ public class TFLiteNumberPlateDetector implements Detector {
             y1 = Math.min(y1, origHeight);
 
             final Rect2d bbox = new Rect2d(x, y, x1 - x, y1 - y);
-            bboxes.add(bbox);
-            scores.add(score);
+            if (classId == 0) {
+                //label
+                labelBboxes.add(bbox);
+                labelScores.add(score);
+            } else {
+                //tel
+                telBBoxes.add(bbox);
+                telScores.add(score);
+            }
         }
-        List<Detection> detections = NMS.nms(mat, bboxes, scores, this.classPredThre, this.nmsThre, 0);
-        return new DetectorResult(detections);
+        List<Detection> labels = NMS.nms(image, labelBboxes, labelScores, this.classPredThre, this.nmsThre, 0);
+        List<Detection> tels = NMS.nms(image, telBBoxes, telScores, this.classPredThre, this.nmsThre, 1);
+        labels.addAll(tels);
+        return new DetectorResult(labels);
     }
 
     @Override
@@ -142,7 +185,8 @@ public class TFLiteNumberPlateDetector implements Detector {
             options.setUseXNNPACK(true);
             options.setNumThreads(3);
             interpreter = new Interpreter(modelFile, options);
-            int numBytesPerChannel = 1; //quantized
+            int numBytesPerChannel = 4; //floating point
+//            int numBytesPerChannel = 1; //quantized
 
             imgData = ByteBuffer.allocateDirect(1 * inputX * inputY * 3 * numBytesPerChannel);
             imgData.order(ByteOrder.nativeOrder());
