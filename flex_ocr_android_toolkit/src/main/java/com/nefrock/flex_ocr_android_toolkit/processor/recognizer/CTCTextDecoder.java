@@ -13,7 +13,6 @@ public class CTCTextDecoder {
         for (int i = 0; i < str.length(); ++i) {
             this.chars[i + 1] = str.charAt(i);
         }
-
     }
 
     public String decode(float[][] preds) {
