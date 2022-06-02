@@ -47,10 +47,9 @@ public class NaiveGoogleRecognizer implements Recognizer {
 
     @Override
     public void process(Mat mat, Detector detector, FlexScanOption option, OnScanListener<FlexScanResults> listener) {
+        long t1 = SystemClock.uptimeMillis();
         DetectorResult detectorResult = detector.process(mat, option);
         List<Detection> detections = detectorResult.getDetections();
-
-        long t1 = SystemClock.uptimeMillis();
         for (Detection detection: detections) {
             org.opencv.core.Rect cvBBox = detection.getCvBoundingBox();
             Mat cropped = new Mat(mat, cvBBox);

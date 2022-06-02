@@ -23,9 +23,9 @@ public class FlexApplication extends Application {
         //送り状
         ModelConfig detectorConfig = new ModelConfig();
         config.setDetector(DetectorKind.INVOICE,
-                new Size(320,320),
+                new Size(384,512),
                 detectorConfig,
-                "custom_models/label-tel-detector.tflite");
+                "custom_models/label-tel-detector-384x512.tflite");
         config.setRecognizer(RecognizerKind.INVOICE,
                 new Size(200,31),
                 new ModelConfig(),

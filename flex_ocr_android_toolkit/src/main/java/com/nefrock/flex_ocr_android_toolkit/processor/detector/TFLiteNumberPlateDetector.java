@@ -82,7 +82,7 @@ public class TFLiteNumberPlateDetector implements Detector {
         imgData.rewind();
         for (int i = 0; i < inputY; ++i) {
             for (int j = 0; j < inputX; ++j) {
-                int pixelValue = intValues[i * inputY + j];
+                int pixelValue = intValues[i * inputX + j];
                 imgData.put((byte) ((pixelValue >> 16) & 0xFF));
                 imgData.put((byte) ((pixelValue >> 8) & 0xFF));
                 imgData.put((byte) (pixelValue & 0xFF));

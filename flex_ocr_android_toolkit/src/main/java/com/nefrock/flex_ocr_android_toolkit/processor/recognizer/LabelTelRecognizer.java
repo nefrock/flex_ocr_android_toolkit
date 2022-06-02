@@ -54,10 +54,9 @@ public class LabelTelRecognizer implements Recognizer {
 
     @Override
     public void process(Mat mat, Detector detector, FlexScanOption option, OnScanListener<FlexScanResults> listener) {
+        long t1 = SystemClock.uptimeMillis();
         DetectorResult detectorResult = detector.process(mat, option);
         List<Detection> detections = detectorResult.getDetections();
-
-        long t1 = SystemClock.uptimeMillis();
         List<FlexScanResult> results = new ArrayList<>();
         for (Detection detection : detections) {
             if(detection.getClassID() == 0) {
@@ -105,7 +104,7 @@ public class LabelTelRecognizer implements Recognizer {
 //            GpuDelegate delegate = new GpuDelegate();
 //            options.addDelegate(delegate);
             options.setUseXNNPACK(true);
-            options.setNumThreads(3);
+            options.setNumThreads(2);
             interpreter = new Interpreter(modelFile, options);
             int numBytesPerChannel = 4; //floating point
             imgData = ByteBuffer.allocateDirect(NUM_BATCHES * inputX * inputY * 1 * numBytesPerChannel);

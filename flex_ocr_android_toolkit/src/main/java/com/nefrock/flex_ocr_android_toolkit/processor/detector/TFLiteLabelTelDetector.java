@@ -71,7 +71,7 @@ public class TFLiteLabelTelDetector implements Detector {
         this.paddingW = 0;
         this.inputX = size.getWidth();
         this.inputY = size.getHeight();
-        this.classPredThre = 0.1f;
+        this.classPredThre = 0.05f;
         this.nmsThre = 0.1f;
     }
 
@@ -89,7 +89,8 @@ public class TFLiteLabelTelDetector implements Detector {
         imgData.rewind();
         for (int i = 0; i < inputY; ++i) {
             for (int j = 0; j < inputX; ++j) {
-                int pixelValue = intValues[i * inputY + j];
+                int idx = i * inputX + j;
+                int pixelValue = intValues[idx];
 //                    // Quantized model
 //                    imgData.put((byte) ((pixelValue >> 16) & 0xFF));
 //                    imgData.put((byte) ((pixelValue >> 8) & 0xFF));

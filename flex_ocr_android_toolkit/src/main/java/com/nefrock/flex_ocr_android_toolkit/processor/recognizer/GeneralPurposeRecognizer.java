@@ -69,10 +69,9 @@ public class GeneralPurposeRecognizer implements Recognizer {
 
     @Override
     public void process(Mat mat, Detector detector, FlexScanOption option, OnScanListener<FlexScanResults> listener) {
+        long t1 = SystemClock.uptimeMillis();
         DetectorResult detectorResult = detector.process(mat, option);
         List<Detection> detections = detectorResult.getDetections();
-
-        long t1 = SystemClock.uptimeMillis();
         List<FlexScanResult> results = new ArrayList<>();
         for (Detection detection : detections) {
             org.opencv.core.Rect cvBBox = detection.getCvBoundingBox();
@@ -97,7 +96,6 @@ public class GeneralPurposeRecognizer implements Recognizer {
             // Run the inference call.
             interpreter.runForMultipleInputsOutputs(inputArray, outputMap);
             String text = decoder.decode(outputPutValues[0]);
-            Log.d("process", text);
             FlexScanResultType typ = FlexScanResultType.SOMETHING_NICE;
             results.add(new FlexScanResult(typ, text, 1.0, detection.getBoundingBox()));
         }
@@ -115,7 +113,7 @@ public class GeneralPurposeRecognizer implements Recognizer {
 //            GpuDelegate delegate = new GpuDelegate();
 //            options.addDelegate(delegate);
             options.setUseXNNPACK(true);
-            options.setNumThreads(3);
+            options.setNumThreads(2);
             interpreter = new Interpreter(modelFile, options);
             int numBytesPerChannel = 4; //floating point
             imgData = ByteBuffer.allocateDirect(NUM_BATCHES * inputX * inputY * 1 * numBytesPerChannel);
