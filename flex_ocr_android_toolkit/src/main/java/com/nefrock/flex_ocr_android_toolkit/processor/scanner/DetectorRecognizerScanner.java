@@ -11,6 +11,8 @@ import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.Recognizer;
 
 import org.opencv.core.Mat;
 
+import java.io.IOException;
+
 public class DetectorRecognizerScanner implements Scanner{
 
     private final Detector detector;
@@ -22,7 +24,7 @@ public class DetectorRecognizerScanner implements Scanner{
     }
 
     @Override
-    public void init() {
+    public void init() throws IOException {
         detector.init();
         recognizer.init();
     }

@@ -6,6 +6,7 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Center;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Identity;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteFastLabelTelDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteLabelTelDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteNumberPlateDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.CarNumberRecognizer;
@@ -51,6 +52,10 @@ public class ScannerBuilder {
                 );
             case INVOICE:
                 return new TFLiteLabelTelDetector(config.getContext(),
+                        config.getDetectorModelPath(),
+                        config.getDetectorInputSize());
+            case INVOICE_FAST:
+                return new TFLiteFastLabelTelDetector(config.getContext(),
                         config.getDetectorModelPath(),
                         config.getDetectorInputSize());
             default:

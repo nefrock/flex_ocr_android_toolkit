@@ -9,6 +9,8 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.RecognizerKind;
 
+import java.io.IOException;
+
 public class FlexApplication extends Application {
 
     private final static String TAG = FlexApplication.class.getSimpleName();
@@ -19,19 +21,31 @@ public class FlexApplication extends Application {
         // モデルファイルはassets以下にあらかじめ配置しておく。pathにはassetsからの相対パスを指定する。
         // モデルの初期化は一度だけ行えばよい
         FlexConfig config = new FlexConfig(this);
-
-        //送り状
+//
+//        //送り状
         ModelConfig detectorConfig = new ModelConfig();
-        config.setDetector(DetectorKind.INVOICE,
-                new Size(384,512),
+////        config.setDetector(DetectorKind.INVOICE,
+////                new Size(384,512),
+////                detectorConfig,
+////                "custom_models/label-tel-detector-384x512.tflite");
+//
+        config.setDetector(DetectorKind.INVOICE_FAST,
+                new Size(320,320),
                 detectorConfig,
-                "custom_models/label-tel-detector-384x512.tflite");
+                "custom_models/spaghettinet_edgetpu_s_320x320.tflite");
+
         config.setRecognizer(RecognizerKind.INVOICE,
                 new Size(200,31),
                 new ModelConfig(),
                 "custom_models/flex-crnn.tflite");
-        FlexAPI.shared().init(config);
+        try {
+            FlexAPI.shared().init(config);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
 
+
+//
         //日本語(画面中央)
 //        ModelConfig detectorConfig = new ModelConfig();
 //        detectorConfig.setHint("size", new Size(200 * 2, 31 * 2));

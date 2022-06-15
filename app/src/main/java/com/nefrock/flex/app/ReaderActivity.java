@@ -27,9 +27,13 @@ import androidx.lifecycle.LifecycleOwner;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexExitCode;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.DetectorKind;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.ModelConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.RecognizerKind;
 import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 
 import java.util.concurrent.ExecutorService;

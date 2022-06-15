@@ -13,6 +13,8 @@ import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+import java.io.IOException;
+
 public class FlexAPI {
 
     private static final FlexAPI singleton = new FlexAPI();
@@ -28,7 +30,7 @@ public class FlexAPI {
         return singleton;
     }
 
-    public void init(@NonNull FlexConfig config) {
+    public void init(@NonNull FlexConfig config) throws IOException {
         ScannerBuilder builder = new ScannerBuilder(config);
         this.scanner = builder.build();
         this.scanner.init();

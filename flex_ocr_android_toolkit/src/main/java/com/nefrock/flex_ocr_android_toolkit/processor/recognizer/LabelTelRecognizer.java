@@ -17,6 +17,7 @@ import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.Interpreter;
 
@@ -59,12 +60,19 @@ public class LabelTelRecognizer implements Recognizer {
         List<Detection> detections = detectorResult.getDetections();
         List<FlexScanResult> results = new ArrayList<>();
         for (Detection detection : detections) {
+
             if(detection.getClassID() == 0) {
                 FlexScanResultType typ = FlexScanResultType.INVOICE_LABEL;
                 results.add(new FlexScanResult(typ, null, detection.getConfidence(), detection.getBoundingBox()));
                 continue;
             }
             org.opencv.core.Rect cvBBox = detection.getCvBoundingBox();
+            //横長のみ検知する
+            if(cvBBox.width / cvBBox.height < 3) {
+                continue;
+            }
+
+
             Mat cropped = new Mat(mat, cvBBox);
             Mat imgResized = new Mat();
             //FIXME: 単純にリサイズしないでアスペクト比を保つこと
@@ -88,7 +96,10 @@ public class LabelTelRecognizer implements Recognizer {
             String text = decoder.decode(outputPutValues[0]);
             Log.d("process", text);
             FlexScanResultType typ = FlexScanResultType.TELEPHONE_NUMBER;
-            results.add(new FlexScanResult(typ, text, 1.0, detection.getBoundingBox()));
+            text = text.replaceAll("[^0-9]", "");
+            if(text.length() >= 10) {
+                results.add(new FlexScanResult(typ, text, 1.0, detection.getBoundingBox()));
+            }
         }
         long t2 = SystemClock.uptimeMillis();
         long elapsed = t2 - t1;

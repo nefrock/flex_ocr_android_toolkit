@@ -10,7 +10,9 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
 
 import org.opencv.core.Mat;
 
+import java.io.IOException;
+
 public interface Scanner {
     void scan(Mat rgb, FlexScanOption option, OnScanListener<FlexScanResults> listener);
-    void init();
+    void init() throws IOException;
 }

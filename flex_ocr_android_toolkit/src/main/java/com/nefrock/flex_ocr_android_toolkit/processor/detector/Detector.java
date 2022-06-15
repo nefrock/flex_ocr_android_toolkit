@@ -8,10 +8,11 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 
 import org.opencv.core.Mat;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface Detector {
     DetectorResult process(Mat mat, FlexScanOption option);
-    void init();
+    void init() throws IOException;
     void close();
 }
