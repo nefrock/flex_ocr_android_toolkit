@@ -20,9 +20,13 @@ import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 
 public class OverlayView extends View {
 
-    private static final float TEXT_SIZE = 40f;
-    private static final float BIG_TEXT_SIZE = 48f;
-    private static final float STROKE_WIDTH = 4.0f;
+//    private static final float TEXT_SIZE = 40f;
+//    private static final float BIG_TEXT_SIZE = 48f;
+//    private static final float STROKE_WIDTH = 4.0f;
+
+    private static final float TEXT_SIZE = 62f;
+    private static final float BIG_TEXT_SIZE = 78f;
+    private static final float STROKE_WIDTH = 8.0f;
 
     private final Paint bboxBoxPaint;
     private final Paint textPaint;
@@ -74,11 +78,18 @@ public class OverlayView extends View {
         }
         double w = this.getWidth();
         double rw = this.resolutionSize.getWidth();
-        double ratio = w / rw;
-        c.drawText("latency(ms): " + this.flexScanResults.getElapsedTime() , 10, this.getTop() + 50, bigTextPaint);
+        double rRatio = w / rw;
+
+        double h = this.getHeight();
+        double rh = this.resolutionSize.getHeight();
+        double hRatio = h / rh;
+
+        double minRatio = Math.min(rRatio, hRatio);
+
+        c.drawText("latency(ms): " + this.flexScanResults.getElapsedTime() , 50, this.getTop() + 100, bigTextPaint);
         for(FlexScanResult result : this.flexScanResults.getResults()) {
             Rect bbox = result.getBoundingBox();
-            Rect boundingBox = scaling(bbox, ratio);
+            Rect boundingBox = scaling(bbox, minRatio);
             //draw bbox
             c.drawRect(boundingBox, bboxBoxPaint);
             String text = result.getText();

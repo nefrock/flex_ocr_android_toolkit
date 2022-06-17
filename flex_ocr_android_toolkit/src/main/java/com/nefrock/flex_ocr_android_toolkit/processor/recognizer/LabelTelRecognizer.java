@@ -67,11 +67,15 @@ public class LabelTelRecognizer implements Recognizer {
                 continue;
             }
             org.opencv.core.Rect cvBBox = detection.getCvBoundingBox();
+
+            if(cvBBox.height == 0) {
+                continue;
+            }
+
             //横長のみ検知する
             if(cvBBox.width / cvBBox.height < 3) {
                 continue;
             }
-
 
             Mat cropped = new Mat(mat, cvBBox);
             Mat imgResized = new Mat();

@@ -44,7 +44,6 @@ public class FlexApplication extends Application {
             e.printStackTrace();
         }
 
-
 //
         //日本語(画面中央)
 //        ModelConfig detectorConfig = new ModelConfig();
@@ -59,7 +58,7 @@ public class FlexApplication extends Application {
 //                "custom_models/flex-crnn.tflite");
 //        FlexAPI.shared().init(config);
 
-        //日本語(画面全体)
+//        日本語(画面全体)
 //        config.setDetector(DetectorKind.IDENTITY,
 //                new Size(-1,-1),
 //                new ModelConfig(),

@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">OCR</string>
+    <string name="app_name">Edge OCR</string>
     <string name="request_permission">カメラの起動を許可してください</string>
     <string name="permdesc_flashlight">フラッシュライトを使用します</string>
     <string name="permlab_flashlight">フラッシュライトを使用します</string>
 
-    <string name="main_title">Flex OCR Scanner</string>
+    <string name="main_title">Edge OCR</string>
     <string name="main_sub_title">#業務用OCRスキャナ #プロトタイプ🦄 </string>
     <string name="main_button_settings">設定</string>
     <string name="main_button_start">スキャン</string>

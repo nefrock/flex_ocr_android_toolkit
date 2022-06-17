@@ -4,7 +4,6 @@ import static java.lang.Math.min;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
@@ -29,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class TFLiteFastLabelTelDetector implements Detector {
+public class TFLiteGeneralDetector implements Detector {
 
     private Interpreter interpreter;
     private final Context context;
@@ -60,7 +59,7 @@ public class TFLiteFastLabelTelDetector implements Detector {
     private final double paddingW;
     private final double paddingH;
 
-    public TFLiteFastLabelTelDetector(Context context, String modelPath, Size size) {
+    public TFLiteGeneralDetector(Context context, String modelPath, Size size) {
         this.context = context;
         this.modelPath = modelPath;
         this.paddingH = 0;
@@ -85,9 +84,9 @@ public class TFLiteFastLabelTelDetector implements Detector {
             for (int j = 0; j < inputX; ++j) {
                 int idx = i * inputX + j;
                 int pixelValue = intValues[idx];
-                imgData.put((byte) ((pixelValue >> 16) & 0xFF));
-                imgData.put((byte) ((pixelValue >> 8) & 0xFF));
-                imgData.put((byte) (pixelValue & 0xFF));
+                imgData.putFloat((float) (2 * ((pixelValue >> 16) & 0xFF) / 255.0) - 1.0f);
+                imgData.putFloat((float) (2 * ((pixelValue >> 8) & 0xFF) / 255.0) - 1.0f);
+                imgData.putFloat((float) (2 * (pixelValue & 0xFF) / 255.0) - 1.0f);
             }
         }
 
@@ -166,13 +165,10 @@ public class TFLiteFastLabelTelDetector implements Detector {
         try {
             MappedByteBuffer modelFile = TFUtil.loadModelFile(context.getAssets(), this.modelPath);
             Interpreter.Options options = new Interpreter.Options();
-            options.setUseNNAPI(true);
-//            GpuDelegate gpuDelegate = new GpuDelegate();
-//            options.addDelegate(gpuDelegate);
-//            options.setUseXNNPACK(true);
-//            options.setNumThreads(2);
+            GpuDelegate delegate = new GpuDelegate();
+            options.addDelegate(delegate);
             interpreter = new Interpreter(modelFile, options);
-            int numBytesPerChannel = 1; //quantized
+            int numBytesPerChannel = 4; //quantized
             imgData = ByteBuffer.allocateDirect(1 * inputX * inputY * 3 * numBytesPerChannel);
             imgData.order(ByteOrder.nativeOrder());
             intValues = new int[inputX * inputY];

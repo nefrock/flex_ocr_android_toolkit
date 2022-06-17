@@ -4,15 +4,22 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.AudioAttributes;
 import android.media.Image;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.camera2.interop.Camera2CameraInfo;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -26,6 +33,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexExitCode;
+import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.DetectorKind;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexAPI;
@@ -36,6 +44,7 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.RecognizerKind;
 import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,9 +64,18 @@ public class ReaderActivity extends AppCompatActivity {
     private Preview preview = null;
     private ImageAnalysis imageAnalysis = null;
     private ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
-    //private final Size resolutionSize = new Size(2448, 3264);
+//    private final Size resolutionSize = new Size(2448, 3264);
     private final Size resolutionSize = new Size(768, 1024);
+
+//    private final Size resolutionSize = new Size(3264 / 10, 2448/ 10);
+
+
     private FlexScanOption flexScanOption;
+
+    private SoundPool soundPool;
+    private int sound;
+    private SoundPool oneUpPool;
+    private int oneUpSound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +104,37 @@ public class ReaderActivity extends AppCompatActivity {
         // flexScanOption = new FlexScanOption(whiteList);
         // サンプルではホワイトリストを設定しない
         flexScanOption = new FlexScanOption();
+
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                // USAGE_MEDIA
+                // USAGE_GAME
+                .setUsage(AudioAttributes.USAGE_GAME)
+                // CONTENT_TYPE_MUSIC
+                // CONTENT_TYPE_SPEECH, etc.
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build();
+
+        soundPool = new SoundPool.Builder()
+                .setAudioAttributes(audioAttributes)
+                // ストリーム数に応じて
+                .setMaxStreams(10)
+                .build();
+        oneUpPool = new SoundPool.Builder()
+                .setAudioAttributes(audioAttributes)
+                // ストリーム数に応じて
+                .setMaxStreams(10)
+                .build();
+
+        try {
+            sound = soundPool.load(this.getAssets().openFd("sounds/coin1.wav"), 1);
+            oneUpSound = oneUpPool.load(this.getAssets().openFd("sounds/oneup.wav"), 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getSupportedResolutionSizes() {
+
     }
 
     private void startCamera() {
@@ -102,6 +151,7 @@ public class ReaderActivity extends AppCompatActivity {
                             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                             .build();
 
+
                     imageAnalysis.setAnalyzer(cameraExecutor, new ImageAnalysis.Analyzer() {
                         @Override
                         @SuppressLint("UnsafeOptInUsageError")
@@ -111,9 +161,11 @@ public class ReaderActivity extends AppCompatActivity {
                                 image.close();
                                 return;
                             }
-
                             Bitmap bitmap = ImageUtils.imageToToBitmap(image.getImage(), 90);
                             FlexAPI.shared().scan(bitmap, flexScanOption, new OnScanListener<FlexScanResults>() {
+
+                                long nbDetected = 0;
+
                                 @Override
                                 public void onScan(FlexScanResults results) {
                                     if (results.getExitCode() != FlexExitCode.DONE) {
@@ -123,8 +175,21 @@ public class ReaderActivity extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            if(results.hasResult(FlexScanResultType.TELEPHONE_NUMBER)) {
+                                                soundPool.play(sound, 1.0f, 1.0f, 0, 0, 1);
+                                            }
+//                                            if(results.hasResult(FlexScanResultType.TELEPHONE_NUMBER)) {
+//                                                if(nbDetected == 10) {
+//                                                    oneUpPool.play(oneUpSound, 1.0f, 1.0f, 1, 0, 2f);
+//                                                    nbDetected = 0;
+//                                                } else {
+////                                                    soundPool.play(sound, 1.0f, 1.0f, 0, 0, 1);
+//                                                    nbDetected += 1;
+//                                                }
+//                                            }
                                             overlayView.drawScanResult(results);
                                             image.close();
+
                                         }
                                     });
                                 }
@@ -162,5 +227,10 @@ public class ReaderActivity extends AppCompatActivity {
                 this.finish();
             }
         }
+    }
+
+    public void onClick(View view){
+        Log.d(this.getClass().getName(), "onclick");
+        this.startCamera();
     }
 }

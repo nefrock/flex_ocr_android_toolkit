@@ -38,6 +38,15 @@ public class FlexScanResults {
         this.exception = e;
     }
 
+    public boolean hasResult(FlexScanResultType typ) {
+        for (FlexScanResult result: results) {
+            if(result.getType() == typ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public List<FlexScanResult> getResults() {
         return results;
     }
