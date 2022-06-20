@@ -32,7 +32,7 @@ public class FlexApplication extends Application {
         config.setDetector(DetectorKind.INVOICE_FAST,
                 new Size(320,320),
                 detectorConfig,
-                "custom_models/spaghettinet_edgetpu_s_320x320.tflite");
+                "custom_models/spaghettinet_edgetpu_s_320x320.bak.tflite");
 
         config.setRecognizer(RecognizerKind.INVOICE,
                 new Size(200,31),

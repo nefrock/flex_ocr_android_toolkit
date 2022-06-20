@@ -59,6 +59,7 @@ public class LabelTelRecognizer implements Recognizer {
         DetectorResult detectorResult = detector.process(mat, option);
         List<Detection> detections = detectorResult.getDetections();
         List<FlexScanResult> results = new ArrayList<>();
+        Log.i("LabelTelRecognizer", "nbDetection=" + detections.size());
         for (Detection detection : detections) {
 
             if(detection.getClassID() == 0) {
@@ -96,9 +97,12 @@ public class LabelTelRecognizer implements Recognizer {
             outputMap.put(0, outputPutValues);
             Object[] inputArray = {imgData};
             // Run the inference call.
+
+            long ts =  SystemClock.uptimeMillis();
             interpreter.runForMultipleInputsOutputs(inputArray, outputMap);
+            long te =  SystemClock.uptimeMillis();
+            Log.i("LabelTelRecognizer", "recognition time:" + (te-ts));
             String text = decoder.decode(outputPutValues[0]);
-            Log.d("process", text);
             FlexScanResultType typ = FlexScanResultType.TELEPHONE_NUMBER;
             text = text.replaceAll("[^0-9]", "");
             if(text.length() >= 10) {

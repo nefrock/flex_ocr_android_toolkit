@@ -17,7 +17,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Rect2d;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.Interpreter;
-import org.tensorflow.lite.gpu.GpuDelegate;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -167,6 +166,7 @@ public class TFLiteFastLabelTelDetector implements Detector {
             MappedByteBuffer modelFile = TFUtil.loadModelFile(context.getAssets(), this.modelPath);
             Interpreter.Options options = new Interpreter.Options();
             options.setUseNNAPI(true);
+
 //            GpuDelegate gpuDelegate = new GpuDelegate();
 //            options.addDelegate(gpuDelegate);
 //            options.setUseXNNPACK(true);

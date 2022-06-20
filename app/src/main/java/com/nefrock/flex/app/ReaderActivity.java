@@ -65,9 +65,8 @@ public class ReaderActivity extends AppCompatActivity {
     private ImageAnalysis imageAnalysis = null;
     private ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
 //    private final Size resolutionSize = new Size(2448, 3264);
-    private final Size resolutionSize = new Size(768, 1024);
-
-//    private final Size resolutionSize = new Size(3264 / 10, 2448/ 10);
+//    private final Size resolutionSize = new Size(768, 1024);
+    private final Size resolutionSize = new Size(288, 352);
 
 
     private FlexScanOption flexScanOption;
