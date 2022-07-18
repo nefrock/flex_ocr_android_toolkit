@@ -12,8 +12,12 @@ import android.media.Image;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.internal.utils.ImageUtil;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.ByteArrayOutputStream;
@@ -104,6 +108,54 @@ public class ImageUtils {
             Imgproc.cvtColor(yuv_mat, mRgba, Imgproc.COLOR_YUV2RGBA_I420, 4);
             return mRgba;
         }
+    }
+
+    // アスペクト比を保ってリサイズする。
+    // 残った部分は0でパディングする。
+    public static Mat resizeWithPad(Mat image, Size size) {
+        double imgH = image.height();
+        double imgW = image.width();
+        double imgRatio = imgH / imgW;
+        double targetH = size.height;
+        double targetW = size.width;
+        double targetRatio = targetH / targetW;
+        Mat res = new Mat();
+        if (imgRatio > targetRatio) {
+            //縦長の画像
+            int resizeH = (int) targetH;
+            int resizeW = (int) ((targetH / imgH) * imgW);
+
+            int padding = (int) (targetW - resizeW);
+            int paddingLeft = padding / 2;
+            int paddingRight = padding / 2;
+
+            if (padding % 2 != 0) {
+                //奇数の場合は右に1つパディングを増やす
+                paddingRight += 1;
+            }
+            Mat resized = new Mat();
+            Imgproc.resize(image, resized, new Size(resizeW, resizeH));
+
+            Core.copyMakeBorder(resized, res, 0, 0, paddingLeft, paddingRight, Core.BORDER_CONSTANT, new Scalar(0,0,0, 255));
+        } else {
+            //横長の画像
+            int resizeW = (int) targetW;
+            int resizeH = (int) ((targetW / imgW) * imgH);
+
+            int padding = (int) (targetH - resizeH);
+            int paddingTop = padding / 2;
+            int paddingBottom = padding / 2;
+            if (padding % 2 != 0) {
+                paddingTop += 1;
+            }
+            Mat resized = new Mat();
+            Imgproc.resize(image, resized, new Size(resizeW, resizeH));
+            Core.copyMakeBorder(resized, res, paddingTop, paddingBottom, 0, 0, Core.BORDER_CONSTANT, new Scalar(0,0,0, 255));
+        }
+        // just for debug;
+        // Bitmap bitmap = Bitmap.createBitmap((int) size.width, (int) size.height, Bitmap.Config.ARGB_8888);
+        // Utils.matToBitmap(res, bitmap);
+        return res;
     }
 
     // ImageProxy → Bitmap

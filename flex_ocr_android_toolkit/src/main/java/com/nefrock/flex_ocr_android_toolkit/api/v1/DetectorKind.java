@@ -5,5 +5,6 @@ public enum DetectorKind {
     INVOICE,
     INVOICE_FAST,
     CAR_NUMBER_PLATE,
+    TEXT,
     CENTER
 }

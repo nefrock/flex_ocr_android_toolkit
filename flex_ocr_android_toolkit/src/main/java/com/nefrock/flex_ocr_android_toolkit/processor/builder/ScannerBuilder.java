@@ -9,6 +9,7 @@ import com.nefrock.flex_ocr_android_toolkit.processor.detector.Identity;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteFastLabelTelDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteLabelTelDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteNumberPlateDetector;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteTextDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.CarNumberRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.GeneralPurposeRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.LabelTelRecognizer;
@@ -39,11 +40,11 @@ public class ScannerBuilder {
     }
 
     private Detector buildDetector() {
-        switch(config.getDetectorKind()) {
+        switch (config.getDetectorKind()) {
             case IDENTITY:
                 return new Identity();
             case CENTER:
-                return new Center((Size)config.getDetectorConfig().getHint("size"));
+                return new Center((Size) config.getDetectorConfig().getHint("size"));
             case CAR_NUMBER_PLATE:
                 return new TFLiteNumberPlateDetector(
                         config.getContext(),
@@ -58,13 +59,17 @@ public class ScannerBuilder {
                 return new TFLiteFastLabelTelDetector(config.getContext(),
                         config.getDetectorModelPath(),
                         config.getDetectorInputSize());
+            case TEXT:
+                return new TFLiteTextDetector(config.getContext(),
+                        config.getDetectorModelPath(),
+                        config.getDetectorInputSize());
             default:
                 return new Identity();
         }
     }
 
     private Recognizer buildRecognizer() {
-        switch(config.getRecognizerKind()) {
+        switch (config.getRecognizerKind()) {
             case G_ALL_EN:
                 return new NaiveGoogleRecognizer(false);
             case G_ALL_JP:

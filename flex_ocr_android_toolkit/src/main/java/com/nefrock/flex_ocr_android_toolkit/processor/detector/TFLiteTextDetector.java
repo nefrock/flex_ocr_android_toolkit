@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class TFLiteFastLabelTelDetector implements Detector {
+public class TFLiteTextDetector implements Detector {
 
     private Interpreter interpreter;
     private final Context context;
@@ -37,8 +37,7 @@ public class TFLiteFastLabelTelDetector implements Detector {
     private final int inputY;
     private ByteBuffer imgData;
 
-    private static final int NUM_DETECTIONS = 10;
-    //    private static final int NUM_DETECTIONS = 1001;
+    private static final int NUM_DETECTIONS = 100;
     private int[] intValues;
     // outputLocations: array of shape [Batchsize, NUM_DETECTIONS,4]
     // contains the location of detected boxes
@@ -53,17 +52,14 @@ public class TFLiteFastLabelTelDetector implements Detector {
     // contains the number of detected boxes
     private float[] numDetections;
 
-    private final float labelClassPredThre = 0.5f;;
-    private final float telClassPredThre = 0.001f;
-    private final float nmsThre = 0.05f;
-    private final double paddingW;
-    private final double paddingH;
+    private final float labelClassPredThre = 0.3f;;
+    private final float nmsThre = 0.001f;
+    private final int paddingW = 5;
+    private final int paddingH = 5;
 
-    public TFLiteFastLabelTelDetector(Context context, String modelPath, Size size) {
+    public TFLiteTextDetector(Context context, String modelPath, Size size) {
         this.context = context;
         this.modelPath = modelPath;
-        this.paddingH = 0;
-        this.paddingW = 0;
         this.inputX = size.getWidth();
         this.inputY = size.getHeight();
     }
@@ -123,19 +119,15 @@ public class TFLiteFastLabelTelDetector implements Detector {
         //NMS
         List<Rect2d> labelBboxes = new ArrayList<>();
         List<Float> labelScores = new ArrayList<>();
-        List<Rect2d> telBBoxes = new ArrayList<>();
-        List<Float> telScores = new ArrayList<>();
 
         int origWidth = image.width();
         int origHeight = image.height();
 
         for (int i = 0; i < numDetectionsOutput; ++i) {
-            int classId = (int) (outputClasses[0][i] + 0.1);
             float score = outputScores[0][i];
-
-            int x = (int) (outputLocations[0][i][1] * origWidth) - 10;
+            int x = (int) (outputLocations[0][i][1] * origWidth);
             int y = (int) (outputLocations[0][i][0] * origHeight);
-            int x1 = (int) (outputLocations[0][i][3] * origWidth) + 10;
+            int x1 = (int) (outputLocations[0][i][3] * origWidth);
             int y1 = (int) (outputLocations[0][i][2] * origHeight);
             x = Math.max(x, 0);
             x1 = Math.min(x1, origWidth);
@@ -143,21 +135,28 @@ public class TFLiteFastLabelTelDetector implements Detector {
             y1 = Math.min(y1, origHeight);
 
             final Rect2d bbox = new Rect2d(x, y, x1 - x, y1 - y);
-
-            if (classId == 0) {
                 //label
                 labelBboxes.add(bbox);
                 labelScores.add(score);
-            } else {
-                //tel
-                telBBoxes.add(bbox);
-                telScores.add(score);
-            }
+
         }
         List<Detection> labels = NMS.nms(image, labelBboxes, labelScores, this.labelClassPredThre, this.nmsThre, 0);
-        List<Detection> tels = NMS.nms(image, telBBoxes, telScores, this.telClassPredThre, this.nmsThre, 1);
-        labels.addAll(tels);
-        return new DetectorResult(labels);
+
+        List<Detection> results = new ArrayList<>();
+
+        for(Detection d :labels) {
+            Rect origRect = d.getBoundingBox();
+            double score = d.getConfidence();
+            int classId = d.getClassID();
+
+            int left = Math.max(0, origRect.left - paddingW);
+            int top = Math.max(0, origRect.top - paddingH);
+            int right = Math.min(origWidth, origRect.right + paddingW);
+            int bottom = Math.min(origHeight, origRect.bottom + paddingH);
+            Rect rect = new Rect(left, top, right, bottom);
+            results.add(new Detection(rect, score, classId));
+        }
+        return new DetectorResult(results);
     }
 
     @Override
@@ -165,11 +164,10 @@ public class TFLiteFastLabelTelDetector implements Detector {
         try {
             MappedByteBuffer modelFile = TFUtil.loadModelFile(context.getAssets(), this.modelPath);
             Interpreter.Options options = new Interpreter.Options();
-//            options.setUseNNAPI(true);
+            options.setUseNNAPI(true);
 //            GpuDelegate gpuDelegate = new GpuDelegate();
 //            options.addDelegate(gpuDelegate);
-            options.setUseXNNPACK(true);
-            options.setNumThreads(2);
+
             interpreter = new Interpreter(modelFile, options);
             int numBytesPerChannel = 1; //quantized
             imgData = ByteBuffer.allocateDirect(1 * inputX * inputY * 3 * numBytesPerChannel);

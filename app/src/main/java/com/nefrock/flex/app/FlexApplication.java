@@ -21,28 +21,45 @@ public class FlexApplication extends Application {
         // モデルファイルはassets以下にあらかじめ配置しておく。pathにはassetsからの相対パスを指定する。
         // モデルの初期化は一度だけ行えばよい
         FlexConfig config = new FlexConfig(this);
-//
-//        //送り状
-        ModelConfig detectorConfig = new ModelConfig();
-////        config.setDetector(DetectorKind.INVOICE,
-////                new Size(384,512),
-////                detectorConfig,
-////                "custom_models/label-tel-detector-384x512.tflite");
-//
-        config.setDetector(DetectorKind.INVOICE_FAST,
-                new Size(320,320),
-                detectorConfig,
-                "custom_models/spaghettinet_edgetpu_s_320x320.bak.tflite");
 
-        config.setRecognizer(RecognizerKind.INVOICE,
-                new Size(200,31),
+        //一般的なテキスト
+
+        ModelConfig detectorConfig = new ModelConfig();
+
+        config.setDetector(DetectorKind.TEXT,
+                new Size(320, 320),
+                detectorConfig,
+                "custom_models/general_spaghettinet_edgetpu_s_320x320.tflite");
+
+        config.setRecognizer(RecognizerKind.FLEX_ALL_JP,
+                new Size(200, 31),
                 new ModelConfig(),
-                "custom_models/flex-crnn.tflite");
+                "custom_models/flex-crnn-bilstm-handwritten-0620-int8.tflite");
         try {
             FlexAPI.shared().init(config);
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+//
+//        //送り状
+//        ModelConfig detectorConfig = new ModelConfig();
+//
+//        config.setDetector(DetectorKind.INVOICE_FAST,
+//                new Size(320,320),
+//                detectorConfig,
+//                "custom_models/spaghettinet_edgetpu_s_320x320.tflite");
+//
+//        config.setRecognizer(RecognizerKind.INVOICE,
+//                new Size(200,31),
+//                new ModelConfig(),
+//                "custom_models/flex-crnn.tflite");
+//        try {
+//            FlexAPI.shared().init(config);
+//        }catch(IOException e){
+//            e.printStackTrace();
+//        }
 
 //
         //日本語(画面中央)
@@ -72,11 +89,15 @@ public class FlexApplication extends Application {
         //number plate
 //        config.setDetector(DetectorKind.CAR_NUMBER_PLATE,
 //                new Size(300, 300),
-//                new EmptyModelConfig(),
+//                new ModelConfig(),
 //                "custom_models/tf-number-plate-detector.tflite");
 //        config.setRecognizer(RecognizerKind.CAR_NUMBER_PLATE,
 //                new Size(-1,-1),
-//                new EmptyModelConfig(), null);
-//        FlexAPI.shared().init(config);
+//                new ModelConfig(), null);
+//        try {
+//            FlexAPI.shared().init(config);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 }

@@ -26,6 +26,7 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.OnScanListener;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detection;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.DetectorResult;
+import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
 
 import org.opencv.android.Utils;
@@ -76,9 +77,7 @@ public class GeneralPurposeRecognizer implements Recognizer {
         for (Detection detection : detections) {
             org.opencv.core.Rect cvBBox = detection.getCvBoundingBox();
             Mat cropped = new Mat(mat, cvBBox);
-            Mat imgResized = new Mat();
-            //FIXME: 単純にリサイズしないでアスペクト比を保つこと
-            Imgproc.resize(cropped, imgResized, new org.opencv.core.Size(inputX, inputY));
+            Mat imgResized = ImageUtils.resizeWithPad(cropped, new org.opencv.core.Size(inputX, inputY));
             Mat imgRotated = new Mat();
             Core.rotate(imgResized, imgRotated, Core.ROTATE_90_CLOCKWISE);
             Imgproc.cvtColor(imgRotated, imgRotated, Imgproc.COLOR_RGB2GRAY);
