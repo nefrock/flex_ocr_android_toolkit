@@ -80,7 +80,7 @@ public class NaiveGoogleRecognizer implements Recognizer {
                                 }
                             }
                             long elapsed = t2 - t1;
-                            FlexScanResultType typ = FlexScanResultType.SOMETHING_NICE;
+                            FlexScanResultType typ = FlexScanResultType.TEXT;
                             results.add(new FlexScanResult(typ, null, 1.0, detection.getBoundingBox()));
                             listener.onScan(new FlexScanResults(results, elapsed));
                         }

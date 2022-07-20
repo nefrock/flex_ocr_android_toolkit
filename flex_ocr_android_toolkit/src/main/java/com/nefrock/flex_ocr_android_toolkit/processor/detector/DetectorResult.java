@@ -1,5 +1,7 @@
 package com.nefrock.flex_ocr_android_toolkit.processor.detector;
 
+import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -22,20 +24,20 @@ public class DetectorResult {
         return this.detections;
     }
 
-    public boolean hasClass(int cls) {
+    public boolean hasClass(FlexScanResultType kind) {
         for(Detection d : this.detections) {
-            if (d.getClassID() == cls) {
+            if (d.getDetectionKind() == kind) {
                 return true;
             }
         }
         return false;
     }
 
-    public Detection getLargest(int cls) {
+    public Detection getLargest(FlexScanResultType kind) {
         int area = -1;
         Detection res = null;
         for(Detection d : this.detections) {
-            if(d.getClassID() != cls) {
+            if(d.getDetectionKind() != kind) {
                 continue;
             }
             int labelArea = d.area();

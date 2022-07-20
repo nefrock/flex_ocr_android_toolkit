@@ -6,10 +6,9 @@ import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Center;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Detector;
 import com.nefrock.flex_ocr_android_toolkit.processor.detector.Identity;
-import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteFastLabelTelDetector;
-import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteLabelTelDetector;
-import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteNumberPlateDetector;
-import com.nefrock.flex_ocr_android_toolkit.processor.detector.TFLiteTextDetector;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.FastLabelTelDetector;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.NumberPlateDetector;
+import com.nefrock.flex_ocr_android_toolkit.processor.detector.TextDetector;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.CarNumberRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.GeneralPurposeRecognizer;
 import com.nefrock.flex_ocr_android_toolkit.processor.recognizer.LabelTelRecognizer;
@@ -46,21 +45,21 @@ public class ScannerBuilder {
             case CENTER:
                 return new Center((Size) config.getDetectorConfig().getHint("size"));
             case CAR_NUMBER_PLATE:
-                return new TFLiteNumberPlateDetector(
+                TextDetector textDetector =  new TextDetector(config.getContext(),
+                    config.getDetectorModelPaths().get(1),
+                    config.getDetectorInputSizes().get(1));
+                return new NumberPlateDetector(
                         config.getContext(),
-                        config.getDetectorModelPath(),
-                        config.getDetectorInputSize()
+                        config.getDetectorModelPaths().get(0),
+                        config.getDetectorInputSizes().get(0),
+                        textDetector
                 );
             case INVOICE:
-                return new TFLiteLabelTelDetector(config.getContext(),
-                        config.getDetectorModelPath(),
-                        config.getDetectorInputSize());
-            case INVOICE_FAST:
-                return new TFLiteFastLabelTelDetector(config.getContext(),
+                return new FastLabelTelDetector(config.getContext(),
                         config.getDetectorModelPath(),
                         config.getDetectorInputSize());
             case TEXT:
-                return new TFLiteTextDetector(config.getContext(),
+                return new TextDetector(config.getContext(),
                         config.getDetectorModelPath(),
                         config.getDetectorInputSize());
             default:

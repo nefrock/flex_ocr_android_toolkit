@@ -1,7 +1,5 @@
 package com.nefrock.flex.app;
 
-import java.util.List;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,7 +12,6 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResult;
-import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
 
 
@@ -27,8 +24,11 @@ public class OverlayView extends View {
     private static final float TEXT_SIZE = 62f;
     private static final float BIG_TEXT_SIZE = 78f;
     private static final float STROKE_WIDTH = 8.0f;
+    private static final float WIDE_STROKE_WIDTH = 16.0f;
 
-    private final Paint bboxBoxPaint;
+    private final Paint textBboxPaint;
+    private final Paint bboxPaint;
+
     private final Paint textPaint;
     private final Paint bigTextPaint;
     private final Paint textBackgroundPaint;
@@ -40,11 +40,17 @@ public class OverlayView extends View {
         super(context, attrs);
         flexScanResults = null;
 
-        bboxBoxPaint = new Paint();
+        textBboxPaint = new Paint();
         int greenColor = Color.argb(127, 0, 255, 0);
-        bboxBoxPaint.setColor(greenColor);
-        bboxBoxPaint.setStyle(Paint.Style.STROKE);
-        bboxBoxPaint.setStrokeWidth(STROKE_WIDTH);
+        textBboxPaint.setColor(greenColor);
+        textBboxPaint.setStyle(Paint.Style.STROKE);
+        textBboxPaint.setStrokeWidth(STROKE_WIDTH);
+
+        bboxPaint = new Paint();
+        int redColor = Color.argb(127, 255, 255, 0);
+        bboxPaint.setColor(redColor);
+        bboxPaint.setStyle(Paint.Style.STROKE);
+        bboxPaint.setStrokeWidth(WIDE_STROKE_WIDTH);
 
         textBackgroundPaint = new Paint();
         textBackgroundPaint.setColor(greenColor);
@@ -90,13 +96,14 @@ public class OverlayView extends View {
         for(FlexScanResult result : this.flexScanResults.getResults()) {
             Rect bbox = result.getBoundingBox();
             Rect boundingBox = scaling(bbox, minRatio);
-            //draw bbox
-            c.drawRect(boundingBox, bboxBoxPaint);
+
             String text = result.getText();
-            //draw text
             if(text != null) {
+                c.drawRect(boundingBox, textBboxPaint);
                 c.drawRect(boundingBox.left - 1, boundingBox.top - TEXT_SIZE, boundingBox.right + 1, boundingBox.top, textBackgroundPaint);
                 c.drawText(text, boundingBox.left, boundingBox.top - 3, textPaint);
+            } else {
+                c.drawRect(boundingBox, bboxPaint);
             }
         }
     }

@@ -3,15 +3,15 @@ package com.nefrock.flex_ocr_android_toolkit.api.v1;
 import android.content.Context;
 import android.util.Size;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FlexConfig {
     private final Context context;
 
     private DetectorKind detectorKind;
-    private String detectorModelPath;
-    private Size detectorInputSize;
+    private List<String> detectorModelPaths;
+    private List<Size> detectorInputSizes;
     private FlexModelSpecificConfig detectorConfig;
 
     private RecognizerKind recognizerKind;
@@ -28,9 +28,21 @@ public class FlexConfig {
                             Size inputSize,
                             FlexModelSpecificConfig detectorConfig,
                             String path) {
-        this.detectorInputSize = inputSize;
+        this.detectorInputSizes = new ArrayList<>();
+        this.detectorInputSizes.add(inputSize);
         this.detectorKind = kind;
-        this.detectorModelPath = path;
+        this.detectorModelPaths =  new ArrayList<>();
+        this.detectorModelPaths.add(path);
+        this.detectorConfig = detectorConfig;
+    }
+
+    public void setDetector(DetectorKind kind,
+                            List<Size> inputSizes,
+                            FlexModelSpecificConfig detectorConfig,
+                            List<String> paths) {
+        this.detectorInputSizes = inputSizes;
+        this.detectorKind = kind;
+        this.detectorModelPaths = paths;
         this.detectorConfig = detectorConfig;
     }
 
@@ -53,12 +65,21 @@ public class FlexConfig {
     }
 
     public String getDetectorModelPath() {
-        return detectorModelPath;
+        return detectorModelPaths.get(0);
     }
 
     public Size getDetectorInputSize() {
-        return detectorInputSize;
+        return detectorInputSizes.get(0);
     }
+
+    public List<String> getDetectorModelPaths() {
+        return detectorModelPaths;
+    }
+
+    public List<Size> getDetectorInputSizes() {
+        return detectorInputSizes;
+    }
+
 
     public FlexModelSpecificConfig getDetectorConfig() {
         return this.detectorConfig;

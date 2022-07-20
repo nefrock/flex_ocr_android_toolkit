@@ -3,6 +3,7 @@ package com.nefrock.flex_ocr_android_toolkit.processor.detector;
 import android.graphics.Rect;
 import android.util.Size;
 
+import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexConfig;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 
@@ -32,7 +33,7 @@ public class Center implements Detector {
         final int top = imageCenterY - height / 2;
 
         Rect bbox = new Rect(left,top,left + width, top + height);
-        Detection one = new Detection(bbox, 1.0, -1);
+        Detection one = new Detection(bbox, 1.0, FlexScanResultType.SOMETHING_NICE, false);
         List<Detection> lst = new ArrayList<>();
         lst.add(one);
         DetectorResult result = new DetectorResult(lst);

@@ -63,7 +63,7 @@ public class CarNumberRecognizer implements Recognizer {
                                     Rect bbox = element.getBoundingBox();
                                     for (Detection detection : detections) {
                                         if (bbox.intersect(detection.getBoundingBox())) {
-                                            FlexScanResultType typ = FlexScanResultType.SOMETHING_NICE;
+                                            FlexScanResultType typ = FlexScanResultType.TEXT;
                                             results.add(new FlexScanResult(typ, text, 1.0, bbox));
                                             break;
                                         }

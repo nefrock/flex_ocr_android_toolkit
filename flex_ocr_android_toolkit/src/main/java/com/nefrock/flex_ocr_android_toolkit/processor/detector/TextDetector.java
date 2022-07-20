@@ -2,6 +2,24 @@ package com.nefrock.flex_ocr_android_toolkit.processor.detector;
 
 import static java.lang.Math.min;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.os.SystemClock;
+import android.util.Log;
+import android.util.Size;
+
+import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
+import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
+import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect2d;
+import org.opencv.imgproc.Imgproc;
+import org.tensorflow.lite.Interpreter;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -10,30 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Rect;
-import android.os.SystemClock;
-import android.util.Log;
-import android.util.Size;
 
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfFloat;
-import org.opencv.core.MatOfInt;
-import org.opencv.core.MatOfRect2d;
-import org.opencv.core.Rect2d;
-import org.opencv.imgproc.Imgproc;
-import org.tensorflow.lite.Interpreter;
-import org.tensorflow.lite.gpu.GpuDelegate;
-import org.tensorflow.lite.nnapi.NnApiDelegate;
-
-import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
-import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
-
-
-public class TFLiteLabelTelDetector implements Detector {
+public class TextDetector implements Detector {
 
     private Interpreter interpreter;
     private final Context context;
@@ -42,8 +38,7 @@ public class TFLiteLabelTelDetector implements Detector {
     private final int inputY;
     private ByteBuffer imgData;
 
-    private static final int NUM_DETECTIONS = 10;
-    //    private static final int NUM_DETECTIONS = 1001;
+    private static final int NUM_DETECTIONS = 100;
     private int[] intValues;
     // outputLocations: array of shape [Batchsize, NUM_DETECTIONS,4]
     // contains the location of detected boxes
@@ -58,20 +53,16 @@ public class TFLiteLabelTelDetector implements Detector {
     // contains the number of detected boxes
     private float[] numDetections;
 
-    private final float classPredThre;
-    private final float nmsThre;
-    private final double paddingW;
-    private final double paddingH;
+    private final float labelClassPredThre = 0.3f;;
+    private final float nmsThre = 0.001f;
+    private final int paddingW = 5;
+    private final int paddingH = 5;
 
-    public TFLiteLabelTelDetector(Context context, String modelPath, Size size) {
+    public TextDetector(Context context, String modelPath, Size size) {
         this.context = context;
         this.modelPath = modelPath;
-        this.paddingH = 0;
-        this.paddingW = 0;
         this.inputX = size.getWidth();
         this.inputY = size.getHeight();
-        this.classPredThre = 0.05f;
-        this.nmsThre = 0.1f;
     }
 
     @Override
@@ -90,14 +81,9 @@ public class TFLiteLabelTelDetector implements Detector {
             for (int j = 0; j < inputX; ++j) {
                 int idx = i * inputX + j;
                 int pixelValue = intValues[idx];
-//                    // Quantized model
-//                    imgData.put((byte) ((pixelValue >> 16) & 0xFF));
-//                    imgData.put((byte) ((pixelValue >> 8) & 0xFF));
-//                    imgData.put((byte) (pixelValue & 0xFF));
-                imgData.putFloat((float) (2 * ((pixelValue >> 16) & 0xFF) / 255.0) - 1.0f);
-                imgData.putFloat((float) (2 * ((pixelValue >> 8) & 0xFF) / 255.0) - 1.0f);
-                imgData.putFloat((float) (2 * (pixelValue & 0xFF) / 255.0) - 1.0f);
-
+                imgData.put((byte) ((pixelValue >> 16) & 0xFF));
+                imgData.put((byte) ((pixelValue >> 8) & 0xFF));
+                imgData.put((byte) (pixelValue & 0xFF));
             }
         }
 
@@ -107,14 +93,10 @@ public class TFLiteLabelTelDetector implements Detector {
         outputScores = new float[1][NUM_DETECTIONS];
         numDetections = new float[1];
         Map<Integer, Object> outputMap = new HashMap<>();
-        outputMap.put(0, outputScores);
-        outputMap.put(1, outputLocations);
-        outputMap.put(2, numDetections);
-        outputMap.put(3, outputClasses);
-
-//        float[][] o1 = new float[1][1001];
-//        Map<Integer, Object> outputMap = new HashMap<>();
-//        outputMap.put(0, o1);
+        outputMap.put(0, outputLocations);
+        outputMap.put(1, outputClasses);
+        outputMap.put(2, outputScores);
+        outputMap.put(3, numDetections);
 
         Object[] inputArray = {imgData};
 
@@ -138,16 +120,12 @@ public class TFLiteLabelTelDetector implements Detector {
         //NMS
         List<Rect2d> labelBboxes = new ArrayList<>();
         List<Float> labelScores = new ArrayList<>();
-        List<Rect2d> telBBoxes = new ArrayList<>();
-        List<Float> telScores = new ArrayList<>();
 
         int origWidth = image.width();
         int origHeight = image.height();
 
         for (int i = 0; i < numDetectionsOutput; ++i) {
-            int classId = (int) (outputClasses[0][i] + 0.1);
             float score = outputScores[0][i];
-
             int x = (int) (outputLocations[0][i][1] * origWidth);
             int y = (int) (outputLocations[0][i][0] * origHeight);
             int x1 = (int) (outputLocations[0][i][3] * origWidth);
@@ -158,40 +136,41 @@ public class TFLiteLabelTelDetector implements Detector {
             y1 = Math.min(y1, origHeight);
 
             final Rect2d bbox = new Rect2d(x, y, x1 - x, y1 - y);
-            if (classId == 0) {
                 //label
                 labelBboxes.add(bbox);
                 labelScores.add(score);
-            } else {
-                //tel
-                telBBoxes.add(bbox);
-                telScores.add(score);
-            }
+
         }
-        List<Detection> labels = NMS.nms(image, labelBboxes, labelScores, this.classPredThre, this.nmsThre, 0);
-        List<Detection> tels = NMS.nms(image, telBBoxes, telScores, this.classPredThre, this.nmsThre, 1);
-        labels.addAll(tels);
-        return new DetectorResult(labels);
+        List<Detection> labels = NMS.nms(image, labelBboxes, labelScores, this.labelClassPredThre, this.nmsThre, FlexScanResultType.TEXT, true);
+        List<Detection> results = new ArrayList<>();
+
+        for(Detection d :labels) {
+            Rect origRect = d.getBoundingBox();
+            double score = d.getConfidence();
+            FlexScanResultType kind = d.getDetectionKind();
+            boolean canOCR = d.canOCR();
+
+            int left = Math.max(0, origRect.left - paddingW);
+            int top = Math.max(0, origRect.top - paddingH);
+            int right = Math.min(origWidth, origRect.right + paddingW);
+            int bottom = Math.min(origHeight, origRect.bottom + paddingH);
+            Rect rect = new Rect(left, top, right, bottom);
+            results.add(new Detection(rect, score, kind, canOCR));
+        }
+        return new DetectorResult(results);
     }
 
     @Override
-    public void init() {
+    public void init() throws IOException {
         try {
             MappedByteBuffer modelFile = TFUtil.loadModelFile(context.getAssets(), this.modelPath);
             Interpreter.Options options = new Interpreter.Options();
-            options.setUseXNNPACK(true);
-            options.setNumThreads(3);
-
-//            GpuDelegate.Options gpuOptions = new GpuDelegate.Options();
-//            gpuOptions.setPreci　　　　　　　　　　sionLossAllowed(true);
-//            gpuOptions.setQuantizedModelsAllowed(true);
-//            GpuDelegate delegate = new GpuDelegate(gpuOptions);
-//            options.addDelegate(delegate);
+            options.setUseNNAPI(true);
+//            GpuDelegate gpuDelegate = new GpuDelegate();
+//            options.addDelegate(gpuDelegate);
 
             interpreter = new Interpreter(modelFile, options);
-            int numBytesPerChannel = 4; //floating point
-//            int numBytesPerChannel = 1; //quantized
-
+            int numBytesPerChannel = 1; //quantized
             imgData = ByteBuffer.allocateDirect(1 * inputX * inputY * 3 * numBytesPerChannel);
             imgData.order(ByteOrder.nativeOrder());
             intValues = new int[inputX * inputY];
@@ -202,6 +181,7 @@ public class TFLiteLabelTelDetector implements Detector {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw e;
         }
     }
 

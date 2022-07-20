@@ -1,23 +1,9 @@
 package com.nefrock.flex_ocr_android_toolkit.processor.recognizer;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.os.SystemClock;
-import android.util.Log;
 import android.util.Size;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.text.Text;
-import com.google.mlkit.vision.text.TextRecognition;
-import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions;
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
-import com.nefrock.flex_ocr_android_toolkit.api.FlexExitCode;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResult;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResults;
@@ -29,12 +15,10 @@ import com.nefrock.flex_ocr_android_toolkit.processor.detector.DetectorResult;
 import com.nefrock.flex_ocr_android_toolkit.util.ImageUtils;
 import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
 
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.Interpreter;
-import org.tensorflow.lite.gpu.GpuDelegate;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -75,6 +59,11 @@ public class GeneralPurposeRecognizer implements Recognizer {
         List<Detection> detections = detectorResult.getDetections();
         List<FlexScanResult> results = new ArrayList<>();
         for (Detection detection : detections) {
+            if(!detection.canOCR()) {
+                FlexScanResultType typ = detection.getDetectionKind();
+                results.add(new FlexScanResult(typ, null, detection.getConfidence(), detection.getBoundingBox()));
+                continue;
+            }
             org.opencv.core.Rect cvBBox = detection.getCvBoundingBox();
             Mat cropped = new Mat(mat, cvBBox);
             Mat imgResized = ImageUtils.resizeWithPad(cropped, new org.opencv.core.Size(inputX, inputY));
@@ -95,7 +84,8 @@ public class GeneralPurposeRecognizer implements Recognizer {
             // Run the inference call.
             interpreter.runForMultipleInputsOutputs(inputArray, outputMap);
             String text = decoder.decode(outputPutValues[0]);
-            FlexScanResultType typ = FlexScanResultType.SOMETHING_NICE;
+            FlexScanResultType typ = detection.getDetectionKind();
+            //TODO scoreをちゃんと計算する
             results.add(new FlexScanResult(typ, text, 1.0, detection.getBoundingBox()));
         }
         long t2 = SystemClock.uptimeMillis();

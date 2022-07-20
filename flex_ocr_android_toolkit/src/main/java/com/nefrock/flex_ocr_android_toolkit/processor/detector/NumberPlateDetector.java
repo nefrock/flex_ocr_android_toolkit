@@ -4,21 +4,21 @@ import static java.lang.Math.min;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
 
+import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
 import com.nefrock.flex_ocr_android_toolkit.api.v1.FlexScanOption;
 import com.nefrock.flex_ocr_android_toolkit.util.TFUtil;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.opencv.core.Rect2d;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.Interpreter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -27,8 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-public class TFLiteTextDetector implements Detector {
+public class NumberPlateDetector implements Detector {
 
     private Interpreter interpreter;
     private final Context context;
@@ -37,7 +36,8 @@ public class TFLiteTextDetector implements Detector {
     private final int inputY;
     private ByteBuffer imgData;
 
-    private static final int NUM_DETECTIONS = 100;
+    private static final int NUM_DETECTIONS = 10;
+    //    private static final int NUM_DETECTIONS = 1001;
     private int[] intValues;
     // outputLocations: array of shape [Batchsize, NUM_DETECTIONS,4]
     // contains the location of detected boxes
@@ -52,34 +52,40 @@ public class TFLiteTextDetector implements Detector {
     // contains the number of detected boxes
     private float[] numDetections;
 
-    private final float labelClassPredThre = 0.3f;;
-    private final float nmsThre = 0.001f;
-    private final int paddingW = 5;
-    private final int paddingH = 5;
+    private final float classPredThre;
+    private final float nmsThre;
+    private final double paddingW;
+    private final double paddingH;
 
-    public TFLiteTextDetector(Context context, String modelPath, Size size) {
+    private TextDetector textDetector;
+
+    public NumberPlateDetector(Context context,
+                               String modelPath,
+                               Size inputSize,
+                               TextDetector textDetector
+    ) {
         this.context = context;
         this.modelPath = modelPath;
-        this.inputX = size.getWidth();
-        this.inputY = size.getHeight();
+        this.paddingH = 0;
+        this.paddingW = 0;
+        this.inputX = inputSize.getWidth();
+        this.inputY = inputSize.getHeight();
+        this.classPredThre = 0.5f;
+        this.nmsThre = 0.3f;
+        this.textDetector = textDetector;
     }
 
     @Override
-    public DetectorResult process(Mat image, FlexScanOption option) {
+    public DetectorResult process(Mat mat, FlexScanOption option) {
         Mat imgResized = new Mat();
-        Imgproc.resize(image, imgResized, new org.opencv.core.Size(inputX, inputY));
-        Bitmap bitmap = Bitmap.createBitmap((int) inputX, (int) inputY, Bitmap.Config.ARGB_8888);
+        Imgproc.resize(mat, imgResized, new org.opencv.core.Size(inputX, inputY));
+        Bitmap bitmap = Bitmap.createBitmap(inputX, inputY, Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(imgResized, bitmap);
-
-        // Preprocess the image data from 0-255 int to normalized float based
-        // on the provided parameters.
         bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
         imgData.rewind();
         for (int i = 0; i < inputY; ++i) {
             for (int j = 0; j < inputX; ++j) {
-                int idx = i * inputX + j;
-                int pixelValue = intValues[idx];
+                int pixelValue = intValues[i * inputX + j];
                 imgData.put((byte) ((pixelValue >> 16) & 0xFF));
                 imgData.put((byte) ((pixelValue >> 8) & 0xFF));
                 imgData.put((byte) (pixelValue & 0xFF));
@@ -96,32 +102,21 @@ public class TFLiteTextDetector implements Detector {
         outputMap.put(1, outputClasses);
         outputMap.put(2, outputScores);
         outputMap.put(3, numDetections);
-
         Object[] inputArray = {imgData};
-
         // Run the inference call.
         long t1 = SystemClock.uptimeMillis();
         interpreter.runForMultipleInputsOutputs(inputArray, outputMap);
         long t2 = SystemClock.uptimeMillis();
         Log.d("TFLiteLabelTelDetector", "process=" + (t2 - t1));
 
-        // Show the best detections.
-        // after scaling them back to the input size.
-        // You need to use the number of detections from the output and not the NUM_DETECTONS variable
-        // declared on top
-        // because on some models, they don't always output the same total number of detections
-        // For example, your model's NUM_DETECTIONS = 20, but sometimes it only outputs 16 predictions
-        // If you don't use the output's numDetections, you'll get nonsensical data
-
-        // cast from float to integer, use min for safety
         int numDetectionsOutput = min(NUM_DETECTIONS, (int) numDetections[0]);
 
         //NMS
-        List<Rect2d> labelBboxes = new ArrayList<>();
-        List<Float> labelScores = new ArrayList<>();
+        List<Rect2d> bboxes = new ArrayList<>();
+        List<Float> scores = new ArrayList<>();
 
-        int origWidth = image.width();
-        int origHeight = image.height();
+        int origWidth = mat.width();
+        int origHeight = mat.height();
 
         for (int i = 0; i < numDetectionsOutput; ++i) {
             float score = outputScores[0][i];
@@ -133,43 +128,54 @@ public class TFLiteTextDetector implements Detector {
             x1 = Math.min(x1, origWidth);
             y = Math.max(y, 0);
             y1 = Math.min(y1, origHeight);
-
             final Rect2d bbox = new Rect2d(x, y, x1 - x, y1 - y);
-                //label
-                labelBboxes.add(bbox);
-                labelScores.add(score);
-
+            bboxes.add(bbox);
+            scores.add(score);
         }
-        List<Detection> labels = NMS.nms(image, labelBboxes, labelScores, this.labelClassPredThre, this.nmsThre, 0);
+        List<Detection> numberPlateDetections = NMS.nms(mat, bboxes, scores, this.classPredThre, this.nmsThre, FlexScanResultType.CAR_NUMBER_PLATE, false);
+        List<Detection> detections = new ArrayList<>();
 
-        List<Detection> results = new ArrayList<>();
+        boolean scanned = false;
+        for (Detection numberPlateDetection : numberPlateDetections) {
+            Rect bbox = numberPlateDetection.getCvBoundingBox();
+            double w = bbox.width;
+            double h = bbox.height;
+            double r = w / h;
+            if(r <= 1 || r >= 3) {
+                continue;
+            }
 
-        for(Detection d :labels) {
-            Rect origRect = d.getBoundingBox();
-            double score = d.getConfidence();
-            int classId = d.getClassID();
+            detections.add(numberPlateDetection);
+            if(scanned) {
+                continue;
+            }
 
-            int left = Math.max(0, origRect.left - paddingW);
-            int top = Math.max(0, origRect.top - paddingH);
-            int right = Math.min(origWidth, origRect.right + paddingW);
-            int bottom = Math.min(origHeight, origRect.bottom + paddingH);
-            Rect rect = new Rect(left, top, right, bottom);
-            results.add(new Detection(rect, score, classId));
+            Mat roi = new Mat(mat, bbox);
+            DetectorResult textDetectorResult = textDetector.process(roi, option);
+            List<Detection> textDetections = textDetectorResult.getDetections();
+            for (Detection textDetection : textDetections) {
+                android.graphics.Rect orig = textDetection.getBoundingBox();
+                android.graphics.Rect rect = new android.graphics.Rect(orig.left + bbox.x,
+                        orig.top + bbox.y,
+                        orig.right + bbox.x,
+                        orig.bottom + bbox.y);
+                detections.add(new Detection(rect, textDetection.getConfidence(), textDetection.getDetectionKind(), textDetection.canOCR()));
+                scanned = true;
+            }
         }
-        return new DetectorResult(results);
+        return new DetectorResult(detections);
     }
 
     @Override
-    public void init() throws IOException {
+    public void init() {
         try {
             MappedByteBuffer modelFile = TFUtil.loadModelFile(context.getAssets(), this.modelPath);
             Interpreter.Options options = new Interpreter.Options();
-            options.setUseNNAPI(true);
-//            GpuDelegate gpuDelegate = new GpuDelegate();
-//            options.addDelegate(gpuDelegate);
-
+            options.setUseXNNPACK(true);
+            options.setNumThreads(3);
             interpreter = new Interpreter(modelFile, options);
             int numBytesPerChannel = 1; //quantized
+
             imgData = ByteBuffer.allocateDirect(1 * inputX * inputY * 3 * numBytesPerChannel);
             imgData.order(ByteOrder.nativeOrder());
             intValues = new int[inputX * inputY];
@@ -178,9 +184,9 @@ public class TFLiteTextDetector implements Detector {
             outputScores = new float[1][NUM_DETECTIONS];
             numDetections = new float[1];
 
+            textDetector.init();
         } catch (Exception e) {
             e.printStackTrace();
-            throw e;
         }
     }
 

@@ -2,6 +2,8 @@ package com.nefrock.flex_ocr_android_toolkit.processor.detector;
 
 import android.graphics.Rect;
 
+import com.nefrock.flex_ocr_android_toolkit.api.FlexScanResultType;
+
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
@@ -13,11 +15,11 @@ import java.util.List;
 
 public class NMS {
 
-    public static List<Detection> nms(Mat orig, List<Rect2d> bboxes, List<Float> scores, float classPredThre, float nmsThre, int classId) {
-        return nms(orig, bboxes, scores, classPredThre, nmsThre, classId, 0, 0);
+    public static List<Detection> nms(Mat orig, List<Rect2d> bboxes, List<Float> scores, float classPredThre, float nmsThre, FlexScanResultType kind, boolean canOCR) {
+        return nms(orig, bboxes, scores, classPredThre, nmsThre, kind, canOCR, 0, 0);
     }
 
-    public static List<Detection> nms(Mat orig, List<Rect2d> bboxes, List<Float> scores, float classPredThre, float nmsThre, int classId, double paddingH, double paddingW) {
+    public static List<Detection> nms(Mat orig, List<Rect2d> bboxes, List<Float> scores, float classPredThre, float nmsThre, FlexScanResultType kind, boolean canOCR, double paddingH, double paddingW) {
         MatOfRect2d matOfBboxes = new MatOfRect2d();
         matOfBboxes.fromList(bboxes);
 
@@ -26,7 +28,6 @@ public class NMS {
 
         MatOfInt matOfResultIdx = new MatOfInt();
         org.opencv.dnn.Dnn.NMSBoxes(matOfBboxes, matOfScores, classPredThre, nmsThre, matOfResultIdx);
-
         List<Detection> res = new ArrayList<>();
         if (matOfResultIdx.empty()) {
             return res;
@@ -51,7 +52,7 @@ public class NMS {
             y1 = Math.min(y1 + padY, orig.height());
 
             Rect rect = new Rect(x, y, x1, y1);
-            res.add(new Detection(rect, score, classId));
+            res.add(new Detection(rect, score, kind, canOCR));
         }
         return res;
     }
